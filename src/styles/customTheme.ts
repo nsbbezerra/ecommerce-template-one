@@ -13,6 +13,12 @@ const FormLabel = defineStyleConfig({
   },
 });
 
+const IconButton = defineStyleConfig({
+  baseStyle: {
+    rounded: "full",
+  },
+});
+
 const customTheme = extendTheme({
   ...theme,
   styles: {
@@ -27,6 +33,7 @@ const customTheme = extendTheme({
   },
   components: {
     FormLabel,
+    IconButton,
   },
 });
 

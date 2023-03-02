@@ -1,10 +1,9 @@
-import { defaultConfigs } from "@/configs";
 import { defaultColors } from "@/styles/customTheme";
 import {
   Avatar,
   Box,
+  Container,
   Flex,
-  Grid,
   HStack,
   IconButton,
   Text,
@@ -67,7 +66,7 @@ export default function DashboardLayout({ pageTitle, children, page }: Props) {
               <IconButton
                 icon={<Menu />}
                 aria-label="Menu Button"
-                variant={"outline"}
+                variant={"ghost"}
                 display={["flex", "flex", "none", "none", "none"]}
                 onClick={onOpen}
               />
@@ -128,11 +127,12 @@ export default function DashboardLayout({ pageTitle, children, page }: Props) {
                 )}
               </Box>
             </HStack>
-            <HStack spacing={10}>
+            <HStack spacing={3}>
               <Flex
                 align={"center"}
                 gap={2}
                 display={["none", "flex", "flex", "flex", "flex"]}
+                w={"48"}
               >
                 <Avatar icon={<User size={17} />} size="sm" />
                 <Text fontWeight={"bold"}>Natanael</Text>
@@ -147,7 +147,9 @@ export default function DashboardLayout({ pageTitle, children, page }: Props) {
               </Tooltip>
             </HStack>
           </Flex>
-          <Box p={7}>{children}</Box>
+          <Container p={7} maxW="8xl">
+            {children}
+          </Container>
         </Box>
       </Flex>
     </Fragment>

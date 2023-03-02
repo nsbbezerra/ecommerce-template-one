@@ -6,17 +6,17 @@ interface StyledMenuItemProps {
   active?: boolean;
 }
 
-export const StyledMenuItem = styled.button<StyledMenuItemProps>`
+const StyledMenuItem = styled.button<StyledMenuItemProps>`
   width: 100%;
   display: flex;
-  height: ${theme.sizes[10]};
+  height: ${theme.sizes["10"]};
   justify-content: start;
   align-items: center;
   gap: 15px;
   padding: 0px 15px;
   color: ${(props) =>
     props.active ? defaultColors.primary["500"] : theme.colors.white};
-  border-left: ${theme.sizes[1.5]} solid
+  border-left: ${theme.sizes["1.5"]} solid
     ${(props) =>
       props.active ? defaultColors.secondary["500"] : "transparent"};
   background-color: ${(props) =>
@@ -35,3 +35,5 @@ export const StyledMenuItem = styled.button<StyledMenuItemProps>`
     background-color: ${theme.colors.whiteAlpha["900"]};
   }
 `;
+
+export { StyledMenuItem };

@@ -5,7 +5,6 @@ import { defaultConfigs } from "@/configs";
 import { defaultColors } from "@/styles/customTheme";
 import {
   Button,
-  Flex,
   Grid,
   Select,
   Table,
@@ -23,7 +22,7 @@ export default function DashboardClientsPage() {
     <Fragment>
       <DashboardLayout
         page="clients"
-        pageTitle={`${defaultConfigs.companyName} - Litagem de clientes`}
+        pageTitle={`${defaultConfigs.companyName} - Clientes`}
       >
         <Grid
           templateColumns={[
@@ -47,24 +46,22 @@ export default function DashboardClientsPage() {
           <Input />
           <Button
             w="full"
-            leftIcon={<Search size={17} />}
+            leftIcon={<Search size={18} />}
             colorScheme={defaultColors.primaryName}
           >
             Buscar
           </Button>
         </Grid>
         <TableContainer shadow={"md"} bg="white" p={3} rounded="md">
-          <Table
-            variant={"striped"}
-            colorScheme={defaultColors.primaryName}
-            size="sm"
-          >
+          <Table variant={"striped"} size="sm">
             <Thead>
               <Tr>
                 <Th minW={"56"}>Nome</Th>
                 <Th minW={"44"}>Telefone</Th>
                 <Th minW={"44"}>Email</Th>
-                <Th w="36">Endereço</Th>
+                <Th w="36" textAlign={"center"}>
+                  Endereço
+                </Th>
               </Tr>
             </Thead>
             <Tbody>
@@ -73,7 +70,13 @@ export default function DashboardClientsPage() {
                 <Td>(63) 99971-1716</Td>
                 <Td>contato.nk.info@gmail.com</Td>
                 <Td>
-                  <Button leftIcon={<ZoomIn size={17} />} size="sm" w="full">
+                  <Button
+                    leftIcon={<ZoomIn size={15} />}
+                    size="xs"
+                    w="full"
+                    variant={"ghost"}
+                    colorScheme={defaultColors.primaryName}
+                  >
                     Visualizar
                   </Button>
                 </Td>
@@ -83,7 +86,13 @@ export default function DashboardClientsPage() {
                 <Td>(63) 99971-1716</Td>
                 <Td>contato.nk.info@gmail.com</Td>
                 <Td>
-                  <Button leftIcon={<ZoomIn size={17} />} size="sm" w="full">
+                  <Button
+                    leftIcon={<ZoomIn size={15} />}
+                    size="xs"
+                    w="full"
+                    variant={"ghost"}
+                    colorScheme={defaultColors.primaryName}
+                  >
                     Visualizar
                   </Button>
                 </Td>

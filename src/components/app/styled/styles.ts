@@ -6,3 +6,5 @@ export const TableContainer = styled(Box)`
   max-width: 100%;
   overflow-x: auto;
 `;
+
+export const BoxContainer = styled(Box)``;

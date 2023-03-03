@@ -88,7 +88,10 @@ export default function SiderContent({ page }: Props) {
           <Tag size={17} />
           PRODUTOS
         </StyledMenuItem>
-        <StyledMenuItem active={page === "master_user" || false}>
+        <StyledMenuItem
+          active={page === "master_user" || false}
+          onClick={() => push("/painel/dashboard/usuarios-master")}
+        >
           <User size={17} />
           USUÁRIOS MASTER
         </StyledMenuItem>

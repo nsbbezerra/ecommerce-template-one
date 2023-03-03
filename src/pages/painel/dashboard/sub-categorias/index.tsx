@@ -47,15 +47,15 @@ export default function DashboardSubCategories() {
             alignItems="end"
             gap={3}
           >
-            <FormControl>
+            <FormControl isRequired>
               <FormLabel>Selecione uma categoria</FormLabel>
               <Select focusBorderColor={defaultColors.primary["500"]}></Select>
             </FormControl>
-            <FormControl>
+            <FormControl isRequired>
               <FormLabel>Nome</FormLabel>
               <Input />
             </FormControl>
-            <FormControl>
+            <FormControl isRequired>
               <FormLabel>Slug</FormLabel>
               <Input />
             </FormControl>

@@ -12,7 +12,6 @@ import {
   FormControl,
   FormLabel,
   Grid,
-  Stack,
   TableContainer,
   Table,
   Tbody,
@@ -29,6 +28,7 @@ import {
   InputGroup,
   InputRightAddon,
   Textarea,
+  Select,
 } from "@chakra-ui/react";
 import { Edit, ImagePlus, Save, Search } from "lucide-react";
 import { Fragment } from "react";
@@ -42,13 +42,7 @@ export default function DashboardProducts() {
       >
         <BoxContainer shadow={"md"} bg="white" p={3} rounded="md" mb={5}>
           <Grid
-            templateColumns={[
-              "1fr",
-              "1fr",
-              "280px 1fr",
-              "280px 1fr",
-              "280px 1fr",
-            ]}
+            templateColumns={["1fr", "1fr", "1fr", "280px 1fr", "280px 1fr"]}
             justifyItems="center"
             gap={3}
           >
@@ -64,16 +58,25 @@ export default function DashboardProducts() {
               gap={3}
             >
               <Grid templateColumns={"1fr"} gap={3}>
-                <Grid templateColumns={"1fr 1fr 1fr"} gap={3}>
-                  <FormControl>
+                <Grid
+                  templateColumns={[
+                    "1fr",
+                    "1fr",
+                    "1fr 1fr 1fr",
+                    "1fr",
+                    "1fr 1fr 1fr",
+                  ]}
+                  gap={3}
+                >
+                  <FormControl isRequired>
                     <FormLabel>Nome</FormLabel>
                     <Input />
                   </FormControl>
-                  <FormControl>
+                  <FormControl isRequired>
                     <FormLabel>Slug</FormLabel>
                     <Input />
                   </FormControl>
-                  <FormControl>
+                  <FormControl isRequired>
                     <FormLabel>Preço</FormLabel>
                     <InputGroup>
                       <Input roundedRight={0} />
@@ -82,7 +85,7 @@ export default function DashboardProducts() {
                   </FormControl>
                 </Grid>
 
-                <FormControl>
+                <FormControl isRequired>
                   <FormLabel>Descrição curta</FormLabel>
                   <Textarea rows={2} resize="none" />
                 </FormControl>
@@ -90,14 +93,64 @@ export default function DashboardProducts() {
                 <FormControl>
                   <FormLabel>Descrição detalhada</FormLabel>
 
-                  <Tiptap />
+                  <Box rounded={"md"} borderWidth="1px" p={2}>
+                    <Tiptap />
+                  </Box>
                 </FormControl>
+
+                <Grid
+                  templateColumns={[
+                    "repeat(1, 1fr)",
+                    "repeat(2, 1fr)",
+                    "repeat(3, 1fr)",
+                    "repeat(2, 1fr)",
+                    "repeat(5, 1fr)",
+                  ]}
+                  gap={3}
+                >
+                  <FormControl isRequired>
+                    <FormLabel>Modo de Entrega</FormLabel>
+                    <Select focusBorderColor={defaultColors.primary["500"]}>
+                      <option>Entrega rápida</option>
+                      <option>Entrega normal</option>
+                    </Select>
+                  </FormControl>
+                  <FormControl isRequired>
+                    <FormLabel>Largura</FormLabel>
+                    <InputGroup>
+                      <Input roundedRight={0} />
+                      <InputRightAddon>cm</InputRightAddon>
+                    </InputGroup>
+                  </FormControl>
+                  <FormControl isRequired>
+                    <FormLabel>Altura</FormLabel>
+                    <InputGroup>
+                      <Input roundedRight={0} />
+                      <InputRightAddon>cm</InputRightAddon>
+                    </InputGroup>
+                  </FormControl>
+                  <FormControl isRequired>
+                    <FormLabel>Comprimento</FormLabel>
+                    <InputGroup>
+                      <Input roundedRight={0} />
+                      <InputRightAddon>cm</InputRightAddon>
+                    </InputGroup>
+                  </FormControl>
+                  <FormControl isRequired>
+                    <FormLabel>Peso</FormLabel>
+                    <InputGroup>
+                      <Input roundedRight={0} />
+                      <InputRightAddon>kg</InputRightAddon>
+                    </InputGroup>
+                  </FormControl>
+                </Grid>
               </Grid>
 
               <Flex justify={"end"}>
                 <Button
                   colorScheme={defaultColors.primaryName}
                   leftIcon={<Save size={18} />}
+                  size="lg"
                 >
                   Salvar
                 </Button>

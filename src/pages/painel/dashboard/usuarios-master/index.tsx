@@ -1,5 +1,4 @@
 import Input from "@/components/app/form/Input";
-import Uploader from "@/components/app/form/uploader";
 import { BoxContainer } from "@/components/app/styled/styles";
 import DashboardLayout from "@/components/dashboard/Layout";
 import { defaultConfigs } from "@/configs";
@@ -11,7 +10,6 @@ import {
   FormControl,
   FormLabel,
   Grid,
-  Stack,
   TableContainer,
   Table,
   Tbody,
@@ -22,64 +20,46 @@ import {
   HStack,
   Text,
   IconButton,
-  Avatar,
   Tooltip,
   Switch,
 } from "@chakra-ui/react";
-import { Edit, ImagePlus, Save, Search } from "lucide-react";
+import { Save, Search, Trash } from "lucide-react";
 import { Fragment } from "react";
 
-export default function DashboardCategories() {
+export default function DashboardMasterUsers() {
   return (
     <Fragment>
       <DashboardLayout
-        page="categories"
-        pageTitle={`${defaultConfigs.companyName} - Categorias`}
+        page="master_user"
+        pageTitle={`${defaultConfigs.companyName} - Usuários Master`}
       >
         <BoxContainer shadow={"md"} bg="white" p={3} rounded="md" mb={5}>
           <Grid
             templateColumns={[
               "1fr",
-              "1fr",
-              "280px 1fr",
-              "280px 1fr",
-              "280px 1fr",
+              "1fr 1fr",
+              "1fr 1fr",
+              "1fr 1fr 150px",
+              "1fr 1fr 150px",
             ]}
-            justifyItems="center"
+            alignItems="end"
             gap={3}
           >
-            <Box w="280px">
-              <Uploader width={"280px"} height="280px" />
-            </Box>
-
-            <Flex
-              h="full"
+            <FormControl isRequired>
+              <FormLabel>Usuário</FormLabel>
+              <Input />
+            </FormControl>
+            <FormControl isRequired>
+              <FormLabel>Senha</FormLabel>
+              <Input type={"password"} />
+            </FormControl>
+            <Button
+              colorScheme={defaultColors.primaryName}
+              leftIcon={<Save size={18} />}
               w="full"
-              direction={"column"}
-              justify="space-between"
-              gap={5}
             >
-              <Stack>
-                <FormControl isRequired>
-                  <FormLabel>Nome</FormLabel>
-                  <Input />
-                </FormControl>
-                <FormControl isRequired>
-                  <FormLabel>Slug</FormLabel>
-                  <Input />
-                </FormControl>
-              </Stack>
-
-              <Flex justify={"end"}>
-                <Button
-                  colorScheme={defaultColors.primaryName}
-                  leftIcon={<Save size={18} />}
-                  size="lg"
-                >
-                  Salvar
-                </Button>
-              </Flex>
-            </Flex>
+              Salvar
+            </Button>
           </Grid>
         </BoxContainer>
 
@@ -110,13 +90,10 @@ export default function DashboardCategories() {
               <Thead>
                 <Tr>
                   <Th w="16" textAlign={"center"}>
-                    thumb
-                  </Th>
-                  <Th w="16" textAlign={"center"}>
                     Ativo?
                   </Th>
                   <Th minW={"56"}>Nome</Th>
-                  <Th minW={"44"}>Slug</Th>
+                  <Th minW={"44"}>Senha</Th>
                   <Th w="36" textAlign={"center"}>
                     Ações
                   </Th>
@@ -124,9 +101,6 @@ export default function DashboardCategories() {
               </Thead>
               <Tbody>
                 <Tr>
-                  <Td textAlign={"center"}>
-                    <Avatar size={"sm"} />
-                  </Td>
                   <Td textAlign={"center"}>
                     <Flex justify={"center"}>
                       <Switch colorScheme={defaultColors.primaryName} />
@@ -136,21 +110,12 @@ export default function DashboardCategories() {
                   <Td>(63) 99971-1716</Td>
                   <Td textAlign={"center"}>
                     <HStack justify={"center"} spacing={1}>
-                      <Tooltip label="Alterar Imagem" hasArrow>
+                      <Tooltip label="Remover" hasArrow>
                         <IconButton
                           aria-label="Editar"
-                          icon={<ImagePlus size={16} />}
+                          icon={<Trash size={16} />}
                           size="sm"
-                          colorScheme={defaultColors.primaryName}
-                          variant="ghost"
-                        />
-                      </Tooltip>
-                      <Tooltip label="Editar" hasArrow>
-                        <IconButton
-                          aria-label="Editar"
-                          icon={<Edit size={16} />}
-                          size="sm"
-                          colorScheme={defaultColors.primaryName}
+                          colorScheme={"red"}
                           variant="ghost"
                         />
                       </Tooltip>
@@ -160,16 +125,6 @@ export default function DashboardCategories() {
               </Tbody>
             </Table>
           </TableContainer>
-
-          <Flex borderTopWidth={"1px"} mt={3} justify="center" pt={3}>
-            <Button
-              colorScheme={defaultColors.primaryName}
-              size="sm"
-              variant={"ghost"}
-            >
-              MOSTRAR MAIS
-            </Button>
-          </Flex>
         </Box>
       </DashboardLayout>
     </Fragment>

@@ -61,6 +61,7 @@ export default function DashboardLayout({ pageTitle, children, page }: Props) {
             px={7}
             justify="space-between"
             gap={3}
+            zIndex={10}
           >
             <HStack spacing={3}>
               <IconButton

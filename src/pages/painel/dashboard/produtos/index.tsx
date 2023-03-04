@@ -41,15 +41,7 @@ export default function DashboardProducts() {
         pageTitle={`${defaultConfigs.companyName} - Produtos`}
       >
         <BoxContainer shadow={"md"} bg="white" p={3} rounded="md" mb={5}>
-          <Grid
-            templateColumns={["1fr", "1fr", "1fr", "280px 1fr", "280px 1fr"]}
-            justifyItems="center"
-            gap={3}
-          >
-            <Box w="280px">
-              <Uploader width={"280px"} height="280px" />
-            </Box>
-
+          <Grid templateColumns={"1fr"} justifyItems="center" gap={3}>
             <Flex
               h="full"
               w="full"

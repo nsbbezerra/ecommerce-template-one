@@ -216,6 +216,32 @@ export default function DashboardCategories() {
     getInitialData();
   }
 
+  function handleActive(id: string, active: boolean) {
+    setIsFetching(true);
+    api
+      .put("/categories/update", {
+        category: {
+          id,
+          active,
+        },
+      })
+      .then((response) => {
+        Swal.fire({
+          title: "Sucesso",
+          text: response.data.message,
+          icon: "success",
+          confirmButtonColor: defaultColors.primary["500"],
+        });
+        setIsFetching(false);
+        reset();
+        getInitialData();
+      })
+      .catch((error) => {
+        setIsFetching(false);
+        getErrorMessage({ error });
+      });
+  }
+
   useEffect(() => {
     getInitialData();
   }, []);
@@ -294,7 +320,7 @@ export default function DashboardCategories() {
             gap={3}
           >
             <Text fontWeight={"bold"} color="gray.600" fontSize={"sm"}>
-              Mostrando {categories.length} itens
+              Mostrando {filteredCategories.length} itens
             </Text>
 
             <HStack>
@@ -361,6 +387,9 @@ export default function DashboardCategories() {
                               <Switch
                                 colorScheme={defaultColors.primaryName}
                                 isChecked={category.active}
+                                onChange={(e) =>
+                                  handleActive(category.id, e.target.checked)
+                                }
                               />
                             </Flex>
                           </Td>

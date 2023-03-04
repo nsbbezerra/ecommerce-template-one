@@ -6,13 +6,20 @@ import TiptapMenuBar from "./tiptap/MenuBar";
 const Tiptap = () => {
   const editor = useEditor({
     extensions: [StarterKit],
-    content: "<p>Hello World! 🌎️</p>",
+    content: "<p></p>",
+    onUpdate({ editor }) {
+      console.log(editor.getHTML());
+    },
   });
 
   return (
     <div>
       <TiptapMenuBar editor={editor} />
-      <EditorTipTap editor={editor} theme="dark" />
+      <EditorTipTap
+        editor={editor}
+        theme="dark"
+        placeholder="Digite aqui seu texto"
+      />
     </div>
   );
 };

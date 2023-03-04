@@ -84,6 +84,7 @@ export default function DashboardCategories() {
       slug: "",
     });
     setFormType({ type: "save" });
+    setThumbnail({ id: null, url: null });
   }
 
   function getInitialData() {
@@ -140,6 +141,7 @@ export default function DashboardCategories() {
           setCategoryId(data.categoryId);
           reset();
           getInitialData();
+          setModalThumbnail(true);
         })
         .catch((error) => {
           setIsLoading(false);
@@ -201,7 +203,7 @@ export default function DashboardCategories() {
   function handleThumbnail(id: string) {
     const result = categories.find((obj) => obj.id === id);
     setThumbnail({
-      id: result?.thumbnail || null,
+      id: result?.thumbnail_id || null,
       url: result?.thumbnail || null,
     });
     setCategoryId(result?.id || "");
@@ -412,13 +414,13 @@ export default function DashboardCategories() {
             <Flex align={"center"}>
               {modalThumbnail && (
                 <Uploader
-                  height={"270px"}
-                  width={"270px"}
+                  height={"275px"}
+                  width={"275px"}
                   to="category"
                   thumbnail={thumbnail}
-                  url={"/thumbnail/update"}
                   destinationId={categoryId}
                   handleClose={handleFinishImage}
+                  handleDelete={() => getInitialData()}
                 />
               )}
             </Flex>

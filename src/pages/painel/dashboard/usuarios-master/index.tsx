@@ -128,7 +128,7 @@ export default function DashboardMasterUsers() {
     Swal.fire({
       title: "Atenção",
       text: "Deseja remover este usuário?",
-      icon: "warning",
+      icon: "question",
       showCancelButton: true,
       showConfirmButton: true,
       showLoaderOnConfirm: true,

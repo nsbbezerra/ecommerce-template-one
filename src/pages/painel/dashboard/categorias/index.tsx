@@ -3,7 +3,12 @@ import Uploader from "@/components/app/form/uploader";
 import { BoxContainer } from "@/components/app/styled/styles";
 import DashboardLayout from "@/components/dashboard/Layout";
 import { defaultConfigs } from "@/configs";
+import { api } from "@/configs/api";
+import { CategoriesDto, CategoriesEntity } from "@/dto/categories";
+import { FormTypeProps } from "@/dto/form-type";
+import getErrorMessage from "@/helpers/get-error-message";
 import { defaultColors } from "@/styles/customTheme";
+import scrollToTop from "@/utils/scroll-to-top";
 import {
   Box,
   Button,
@@ -11,7 +16,6 @@ import {
   FormControl,
   FormLabel,
   Grid,
-  Stack,
   TableContainer,
   Table,
   Tbody,
@@ -25,61 +29,256 @@ import {
   Avatar,
   Tooltip,
   Switch,
+  Modal,
+  ModalOverlay,
+  ModalContent,
+  ModalHeader,
+  ModalBody,
+  ModalCloseButton,
+  Spinner,
+  Tag,
+  TagLabel,
+  TagCloseButton,
 } from "@chakra-ui/react";
-import { Edit, ImagePlus, Save, Search } from "lucide-react";
-import { Fragment } from "react";
+import { Edit, ImagePlus, PackageOpen, Save } from "lucide-react";
+import { FormEvent, Fragment, useEffect, useState } from "react";
+import Swal from "sweetalert2";
+
+interface ThumbnailProps {
+  url: string | null;
+  id: string | null;
+}
 
 export default function DashboardCategories() {
+  const [modalThumbnail, setModalThumbnail] = useState<boolean>(false);
+  const [isFetching, setIsFetching] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [categoryId, setCategoryId] = useState<string>("");
+  const [thumbnail, setThumbnail] = useState<ThumbnailProps>({
+    id: null,
+    url: null,
+  });
+
+  const [formType, setFormType] = useState<FormTypeProps>({ type: "save" });
+
+  const [categories, setCategories] = useState<CategoriesEntity[]>([]);
+
+  const [formCategories, setFormCategories] = useState<CategoriesDto>({
+    active: true,
+    name: "",
+    slug: "",
+  });
+
+  const [search, setSearch] = useState<string>("");
+
+  const filteredCategories = search.length
+    ? categories.filter((obj) =>
+        obj.name.toLowerCase().includes(search.toLowerCase())
+      )
+    : categories;
+
+  function reset() {
+    setFormCategories({
+      active: true,
+      name: "",
+      slug: "",
+    });
+    setFormType({ type: "save" });
+  }
+
+  function getInitialData() {
+    setIsFetching(true);
+    api
+      .get("/categories/get-all")
+      .then((response) => {
+        const { data } = response;
+        setCategories(data);
+        setIsFetching(false);
+      })
+      .catch((error) => {
+        getErrorMessage({ error });
+        setIsFetching(false);
+      });
+  }
+
+  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+
+    if (!formCategories.name.length) {
+      Swal.fire({
+        title: "Atenção",
+        text: "Insira um nome para a categoria",
+        icon: "warning",
+        confirmButtonColor: defaultColors.primary["500"],
+      });
+      return;
+    }
+
+    if (formType.type === "save") {
+      setIsLoading(true);
+      api
+        .post("/categories/save", {
+          category: {
+            name: formCategories.name,
+            active: formCategories.active,
+            slug: formCategories.name
+              .normalize("NFD")
+              .replaceAll(/[^\w\s]/gi, "")
+              .replaceAll(" ", "-")
+              .toLowerCase(),
+          },
+        })
+        .then((response) => {
+          const { data } = response;
+          Swal.fire({
+            title: "Sucesso",
+            text: response.data.message,
+            icon: "success",
+            confirmButtonColor: defaultColors.primary["500"],
+          });
+          setIsLoading(false);
+          setCategoryId(data.categoryId);
+          reset();
+          getInitialData();
+        })
+        .catch((error) => {
+          setIsLoading(false);
+          getErrorMessage({ error });
+        });
+    } else {
+      setIsLoading(true);
+      api
+        .put("/categories/update", {
+          category: {
+            id: categoryId,
+            name: formCategories.name,
+            slug: formCategories.name
+              .normalize("NFD")
+              .replaceAll(/[^\w\s]/gi, "")
+              .replaceAll(" ", "-")
+              .toLowerCase(),
+          },
+        })
+        .then((response) => {
+          Swal.fire({
+            title: "Sucesso",
+            text: response.data.message,
+            icon: "success",
+            confirmButtonColor: defaultColors.primary["500"],
+          });
+          setIsLoading(false);
+          reset();
+          getInitialData();
+        })
+        .catch((error) => {
+          setIsLoading(false);
+          getErrorMessage({ error });
+        });
+    }
+  }
+
+  function handleEdit(id: string) {
+    const result = categories.find((obj) => obj.id === id);
+    if (result) {
+      setFormCategories({
+        active: result.active,
+        name: result.name,
+        slug: result.slug,
+      });
+      setCategoryId(result.id);
+      scrollToTop();
+      setFormType({ type: "edit" });
+    } else {
+      Swal.fire({
+        title: "Atenção",
+        text: "Categoria não encontrada",
+        icon: "warning",
+        confirmButtonColor: defaultColors.primary["500"],
+      });
+    }
+  }
+
+  function handleThumbnail(id: string) {
+    const result = categories.find((obj) => obj.id === id);
+    setThumbnail({
+      id: result?.thumbnail || null,
+      url: result?.thumbnail || null,
+    });
+    setCategoryId(result?.id || "");
+    setModalThumbnail(true);
+  }
+
+  function handleFinishImage() {
+    setModalThumbnail(false);
+    reset();
+    getInitialData();
+  }
+
+  useEffect(() => {
+    getInitialData();
+  }, []);
+
   return (
     <Fragment>
       <DashboardLayout
         page="categories"
         pageTitle={`${defaultConfigs.companyName} - Categorias`}
       >
-        <BoxContainer shadow={"md"} bg="white" p={3} rounded="md" mb={5}>
-          <Grid
-            templateColumns={[
-              "1fr",
-              "1fr",
-              "280px 1fr",
-              "280px 1fr",
-              "280px 1fr",
-            ]}
-            justifyItems="center"
-            gap={3}
-          >
-            <Box w="280px">
-              <Uploader width={"280px"} height="280px" />
-            </Box>
-
-            <Flex
-              h="full"
-              w="full"
-              direction={"column"}
-              justify="space-between"
-              gap={5}
-            >
-              <Stack>
-                <FormControl isRequired>
-                  <FormLabel>Nome</FormLabel>
-                  <Input />
+        <BoxContainer
+          shadow={"md"}
+          bg="white"
+          p={3}
+          rounded="md"
+          mb={5}
+          id="edit"
+        >
+          <Grid templateColumns={"1fr"} justifyItems="center" gap={3}>
+            <form onSubmit={handleSubmit} style={{ width: "100%" }}>
+              <Flex
+                h="full"
+                w="full"
+                direction={"column"}
+                justify="space-between"
+                gap={5}
+              >
+                <FormControl>
+                  <FormLabel mb={1}>
+                    <HStack>
+                      <Text>Nome</Text>{" "}
+                      {formType.type === "save" ? (
+                        <Tag colorScheme={"green"}>Criação</Tag>
+                      ) : (
+                        <Tag colorScheme={"blue"}>
+                          <TagLabel>Edição</TagLabel>
+                          <TagCloseButton onClick={() => reset()} />
+                        </Tag>
+                      )}
+                    </HStack>
+                  </FormLabel>
+                  <Input
+                    value={formCategories.name}
+                    onChange={(e) =>
+                      setFormCategories({
+                        ...formCategories,
+                        name: e.target.value,
+                      })
+                    }
+                  />
                 </FormControl>
-                <FormControl isRequired>
-                  <FormLabel>Slug</FormLabel>
-                  <Input />
-                </FormControl>
-              </Stack>
 
-              <Flex justify={"end"}>
-                <Button
-                  colorScheme={defaultColors.primaryName}
-                  leftIcon={<Save size={18} />}
-                  size="lg"
-                >
-                  Salvar
-                </Button>
+                <Flex justify={"end"}>
+                  <Button
+                    colorScheme={defaultColors.primaryName}
+                    leftIcon={<Save size={18} />}
+                    size="lg"
+                    isLoading={isLoading}
+                    type="submit"
+                  >
+                    Salvar
+                  </Button>
+                </Flex>
               </Flex>
-            </Flex>
+            </form>
           </Grid>
         </BoxContainer>
 
@@ -93,85 +292,139 @@ export default function DashboardCategories() {
             gap={3}
           >
             <Text fontWeight={"bold"} color="gray.600" fontSize={"sm"}>
-              Mostrando 5 itens
+              Mostrando {categories.length} itens
             </Text>
 
             <HStack>
-              <Input placeholder="Digite para buscar" />
-              <IconButton
-                aria-label="Buscar categoria"
-                icon={<Search size={18} />}
-                colorScheme={defaultColors.primaryName}
+              <Input
+                placeholder="Digite para buscar"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
               />
             </HStack>
           </Flex>
-          <TableContainer>
-            <Table variant={"striped"} size="sm">
-              <Thead>
-                <Tr>
-                  <Th w="16" textAlign={"center"}>
-                    thumb
-                  </Th>
-                  <Th w="16" textAlign={"center"}>
-                    Ativo?
-                  </Th>
-                  <Th minW={"56"}>Nome</Th>
-                  <Th minW={"44"}>Slug</Th>
-                  <Th w="36" textAlign={"center"}>
-                    Ações
-                  </Th>
-                </Tr>
-              </Thead>
-              <Tbody>
-                <Tr>
-                  <Td textAlign={"center"}>
-                    <Avatar size={"sm"} />
-                  </Td>
-                  <Td textAlign={"center"}>
-                    <Flex justify={"center"}>
-                      <Switch colorScheme={defaultColors.primaryName} />
-                    </Flex>
-                  </Td>
-                  <Td>Natanael dos Santos Bezerra</Td>
-                  <Td>(63) 99971-1716</Td>
-                  <Td textAlign={"center"}>
-                    <HStack justify={"center"} spacing={1}>
-                      <Tooltip label="Alterar Imagem" hasArrow>
-                        <IconButton
-                          aria-label="Editar"
-                          icon={<ImagePlus size={16} />}
-                          size="sm"
-                          colorScheme={defaultColors.primaryName}
-                          variant="ghost"
-                        />
-                      </Tooltip>
-                      <Tooltip label="Editar" hasArrow>
-                        <IconButton
-                          aria-label="Editar"
-                          icon={<Edit size={16} />}
-                          size="sm"
-                          colorScheme={defaultColors.primaryName}
-                          variant="ghost"
-                        />
-                      </Tooltip>
-                    </HStack>
-                  </Td>
-                </Tr>
-              </Tbody>
-            </Table>
-          </TableContainer>
-
-          <Flex borderTopWidth={"1px"} mt={3} justify="center" pt={3}>
-            <Button
-              colorScheme={defaultColors.primaryName}
-              size="sm"
-              variant={"ghost"}
+          {isFetching ? (
+            <Flex
+              justify={"center"}
+              align="center"
+              p={10}
+              direction="column"
+              gap={5}
             >
-              MOSTRAR MAIS
-            </Button>
-          </Flex>
+              <Spinner size={"xl"} />
+              <Text>Carregando...</Text>
+            </Flex>
+          ) : (
+            <>
+              {filteredCategories.length === 0 ? (
+                <Flex
+                  justify={"center"}
+                  align="center"
+                  p={10}
+                  direction="column"
+                  gap={5}
+                >
+                  <PackageOpen size={40} />
+                  <Text>Nenhum item para mostrar</Text>
+                </Flex>
+              ) : (
+                <TableContainer>
+                  <Table variant={"striped"} size="sm">
+                    <Thead>
+                      <Tr>
+                        <Th w="16" textAlign={"center"}>
+                          thumb
+                        </Th>
+                        <Th w="16" textAlign={"center"}>
+                          Ativo?
+                        </Th>
+                        <Th minW={"56"}>Nome</Th>
+                        <Th minW={"44"}>Slug</Th>
+                        <Th w="36" textAlign={"center"}>
+                          Ações
+                        </Th>
+                      </Tr>
+                    </Thead>
+                    <Tbody>
+                      {filteredCategories.map((category) => (
+                        <Tr key={category.id}>
+                          <Td textAlign={"center"}>
+                            <Avatar
+                              size={"sm"}
+                              src={category.thumbnail || ""}
+                            />
+                          </Td>
+                          <Td textAlign={"center"}>
+                            <Flex justify={"center"}>
+                              <Switch
+                                colorScheme={defaultColors.primaryName}
+                                isChecked={category.active}
+                              />
+                            </Flex>
+                          </Td>
+                          <Td>{category.name}</Td>
+                          <Td>{category.slug}</Td>
+                          <Td textAlign={"center"}>
+                            <HStack justify={"center"} spacing={1}>
+                              <Tooltip label="Alterar Imagem" hasArrow>
+                                <IconButton
+                                  aria-label="Editar"
+                                  icon={<ImagePlus size={16} />}
+                                  size="sm"
+                                  colorScheme={defaultColors.primaryName}
+                                  variant="ghost"
+                                  onClick={() => handleThumbnail(category.id)}
+                                />
+                              </Tooltip>
+                              <Tooltip label="Editar" hasArrow>
+                                <IconButton
+                                  aria-label="Editar"
+                                  icon={<Edit size={16} />}
+                                  size="sm"
+                                  colorScheme={defaultColors.primaryName}
+                                  variant="ghost"
+                                  onClick={() => handleEdit(category.id)}
+                                />
+                              </Tooltip>
+                            </HStack>
+                          </Td>
+                        </Tr>
+                      ))}
+                    </Tbody>
+                  </Table>
+                </TableContainer>
+              )}
+            </>
+          )}
         </Box>
       </DashboardLayout>
+
+      <Modal
+        isOpen={modalThumbnail}
+        onClose={() => setModalThumbnail(false)}
+        size={"xs"}
+      >
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>Imagem</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody pb={5}>
+            <Flex align={"center"}>
+              {modalThumbnail && (
+                <Uploader
+                  height={"270px"}
+                  width={"270px"}
+                  to="category"
+                  thumbnail={thumbnail}
+                  url={"/thumbnail/update"}
+                  destinationId={categoryId}
+                  handleClose={handleFinishImage}
+                />
+              )}
+            </Flex>
+          </ModalBody>
+        </ModalContent>
+      </Modal>
     </Fragment>
   );
 }

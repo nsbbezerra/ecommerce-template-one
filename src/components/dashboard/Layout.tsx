@@ -49,7 +49,7 @@ export default function DashboardLayout({ pageTitle, children, page }: Props) {
       <HeadApp title={pageTitle} />
       <Flex w="100vw" h="100vh">
         <DashboardSider page={page} isOpen={isOpen} onClose={onClose} />
-        <Box w={"full"} overflow="auto" maxH={"full"}>
+        <Box w={"full"} overflow="auto" maxH={"full"} id="scroller">
           <Flex
             h={"16"}
             bg={"white"}

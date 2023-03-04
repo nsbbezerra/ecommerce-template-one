@@ -8,7 +8,10 @@ interface Props {
 export default function getErrorMessage({ error }: Props) {
   return Swal.fire({
     title: "Erro",
-    text: (error.message && error.response?.data.message) || "",
+    text:
+      error.response.data.message ||
+      error.message ||
+      "Um erro desconhecido ocorreu durante o processo!",
     confirmButtonColor: defaultColors.primary["500"],
     icon: "error",
   });

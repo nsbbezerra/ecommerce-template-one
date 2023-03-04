@@ -3,12 +3,17 @@ import StarterKit from "@tiptap/starter-kit";
 import { EditorTipTap } from "./dashboard/styles/styles";
 import TiptapMenuBar from "./tiptap/MenuBar";
 
-const Tiptap = () => {
+interface Props {
+  onChange: (value: string) => void;
+  value: string;
+}
+
+const Tiptap = ({ onChange, value }: Props) => {
   const editor = useEditor({
     extensions: [StarterKit],
-    content: "<p></p>",
-    onUpdate({ editor }) {
-      console.log(editor.getHTML());
+    content: value,
+    onBlur({ editor }) {
+      onChange(editor.getHTML());
     },
   });
 

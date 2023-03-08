@@ -89,13 +89,11 @@ export default function Uploader({
 
   function deleteThumbnail() {
     setIsLoading(true);
-
     api
       .put(`/thumbnail/delete-thumbnail/${to}/${destinationId}`, {
         thumbnailId: thumbnail?.id,
       })
       .then((response) => {
-        console.log(response);
         Swal.fire({
           title: "Sucesso",
           text: response.data.message,

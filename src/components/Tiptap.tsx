@@ -1,25 +1,16 @@
-import { useEditor } from "@tiptap/react";
+import { Editor, useEditor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
+import { memo, useEffect } from "react";
 import { EditorTipTap } from "./dashboard/styles/styles";
 import TiptapMenuBar from "./tiptap/MenuBar";
 
 interface Props {
-  onChange: (value: string) => void;
-  value: string;
+  editor: Editor | null;
 }
 
-const Tiptap = ({ onChange, value }: Props) => {
-  const editor = useEditor({
-    extensions: [StarterKit],
-    content: value,
-    onBlur({ editor }) {
-      onChange(editor.getHTML());
-    },
-  });
-
+const Tiptap = ({ editor }: Props) => {
   return (
     <div>
-      <TiptapMenuBar editor={editor} />
       <EditorTipTap
         editor={editor}
         theme="dark"
@@ -29,4 +20,4 @@ const Tiptap = ({ onChange, value }: Props) => {
   );
 };
 
-export default Tiptap;
+export default memo(Tiptap);

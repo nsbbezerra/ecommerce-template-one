@@ -91,6 +91,10 @@ a {
   text-decoration: none;
 }
 
+.swal2-container {
+  z-index: 20000 !important;
+}
+
 @media (prefers-color-scheme: dark) {
   html {
     color-scheme: dark;

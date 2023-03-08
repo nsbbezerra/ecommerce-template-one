@@ -32,7 +32,7 @@ export default function DashboardSider({ page, isOpen, onClose }: Props) {
   return (
     <Fragment>
       <Box
-        w="280px"
+        w="250px"
         bg={defaultColors.primary["900"]}
         h="full"
         maxH={"full"}
@@ -45,10 +45,10 @@ export default function DashboardSider({ page, isOpen, onClose }: Props) {
 
       <Drawer isOpen={isOpen} placement="left" onClose={onClose} size="xs">
         <DrawerOverlay />
-        <DrawerContent bg="transparent" overflow="hidden" maxW={"280px"}>
+        <DrawerContent bg="transparent" overflow="hidden" maxW={"250px"}>
           <DrawerCloseButton color={"white"} />
           <Box
-            w="280px"
+            w="250px"
             bg={defaultColors.primary["900"]}
             h="full"
             maxH={"full"}

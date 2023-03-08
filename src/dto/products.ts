@@ -1,3 +1,5 @@
+import { ProductOptionsEntity } from "./products-options";
+
 export interface ProductsEntityDto {
   id?: string;
   name: string;
@@ -6,7 +8,7 @@ export interface ProductsEntityDto {
   short_description: string | null;
   thumbnail?: string | null;
   thumbnail_id?: string | null;
-  description: string;
+  description?: string;
   price: string;
   request?: number;
   promotional?: boolean;
@@ -16,6 +18,15 @@ export interface ProductsEntityDto {
   created_at?: Date;
   category_id: string;
   collection_id: string;
+  stock_type?: string;
+  stock?: string | null;
+}
+
+interface ShippingInfoProps {
+  width: string;
+  height: string;
+  lenght: string;
+  weight: string;
 }
 
 export interface ProductsWithRelationshipEntity {
@@ -25,15 +36,18 @@ export interface ProductsWithRelationshipEntity {
   active: boolean;
   short_description: string | null;
   thumbnail?: string | null;
-  thumbnail_id: string | null;
+  thumbnail_id?: string | null;
   description: string;
   price: string;
   request: number;
   promotional: boolean;
   promo_rate: number;
-  shipping_info: any;
+  shipping_info: ShippingInfoProps;
   freight_priority: "FAST" | "NORMAL";
   created_at: Date;
   category: { id: string; name: string };
   collection: { id: string; name: string };
+  ProductOptions: ProductOptionsEntity[];
+  stock_type?: string;
+  stock?: string | null;
 }

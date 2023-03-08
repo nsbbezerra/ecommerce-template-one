@@ -40,11 +40,30 @@ import {
   TagLabel,
   TagCloseButton,
   Spinner,
+  Modal,
+  ModalOverlay,
+  ModalContent,
+  ModalHeader,
+  ModalCloseButton,
+  ModalBody,
+  theme,
 } from "@chakra-ui/react";
-import { Edit, ImagePlus, PackageOpen, Save, Search } from "lucide-react";
+import {
+  Edit,
+  ImagePlus,
+  PackageOpen,
+  Save,
+  Search,
+  Trash,
+} from "lucide-react";
 import { FormEvent, Fragment, useEffect, useState } from "react";
 import Swal from "sweetalert2";
 import formatMoney from "@/utils/format-money";
+import scrollToTop from "@/utils/scroll-to-top";
+import { useEditor } from "@tiptap/react";
+import StarterKit from "@tiptap/starter-kit";
+import TiptapMenuBar from "@/components/tiptap/MenuBar";
+import calcDiscount from "@/utils/calc-percentage";
 
 interface ShippingInfoProps {
   width: string;
@@ -53,17 +72,37 @@ interface ShippingInfoProps {
   weight: string;
 }
 
+interface ThumbnailProps {
+  url: string | null;
+  id: string | null;
+}
+
+interface ProductOptionsProps {
+  id: string;
+  headline: string;
+  content: string;
+  stock: string | null;
+}
+
+const LIMIT_PRODUCTS = 10;
+
 export default function DashboardProducts() {
+  const editor = useEditor({
+    extensions: [StarterKit],
+    content: "Insira seu texto aqui",
+  });
+
   const [productForm, setProductForm] = useState<ProductsEntityDto>({
     active: true,
     category_id: "",
     collection_id: "",
-    description: "",
     slug: "",
     name: "",
     price: "",
     short_description: "",
     freight_priority: "",
+    stock: null,
+    stock_type: "",
   });
 
   const [shippingInfo, setShippingInfo] = useState<ShippingInfoProps>({
@@ -73,12 +112,35 @@ export default function DashboardProducts() {
     width: "",
   });
 
+  const [productOptionsForm, setProductOptionsForm] =
+    useState<ProductOptionsProps>({
+      content: "",
+      headline: "",
+      stock: "",
+      id: "",
+    });
+
+  const [productsOptions, setProductsOptions] = useState<ProductOptionsProps[]>(
+    []
+  );
+
   const [formType, setFormType] = useState<FormTypeProps>({ type: "save" });
+
+  const [modalThumbnail, setModalThumbnail] = useState<boolean>(false);
+  const [thumbnail, setThumbnail] = useState<ThumbnailProps>({
+    id: null,
+    url: null,
+  });
+
+  const [page, setPage] = useState<number>(0);
+  const [totalProducts, setTotalProducts] = useState<number>(0);
 
   const [productId, setProductId] = useState<string>("");
 
   const [isFetching, setIsFetching] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isProductOptionLoading, setIsProductOptionLoading] =
+    useState<boolean>(false);
 
   const [products, setProducts] = useState<ProductsWithRelationshipEntity[]>(
     []
@@ -122,12 +184,19 @@ export default function DashboardProducts() {
       });
   }
 
-  function getAllProducts() {
+  function getAllProducts(actualPage: number, mode: "handleMore" | "update") {
     setIsFetching(true);
+    setPage(actualPage);
     api
-      .get("/products/get-all")
+      .get(`/products/get-all/${LIMIT_PRODUCTS * actualPage}/${LIMIT_PRODUCTS}`)
       .then((response) => {
-        setProducts(response.data);
+        const newProducts = response.data.products;
+        if (mode === "update") {
+          setProducts(newProducts);
+        } else {
+          setProducts([...products, ...newProducts]);
+        }
+        setTotalProducts(response.data.count);
         setIsFetching(false);
       })
       .catch((error) => {
@@ -136,17 +205,23 @@ export default function DashboardProducts() {
       });
   }
 
+  function handleMore() {
+    const more = page + 1;
+    getAllProducts(more, "handleMore");
+  }
+
   function reset() {
     setProductForm({
       active: true,
       category_id: "",
       collection_id: "",
-      description: "",
       slug: "",
       name: "",
       price: "",
       short_description: "",
       freight_priority: "",
+      stock: null,
+      stock_type: "",
     });
     setShippingInfo({
       height: "",
@@ -155,10 +230,21 @@ export default function DashboardProducts() {
       width: "",
     });
     setFormType({ type: "save" });
+    editor?.commands.clearContent();
+  }
+
+  function resetProductOptionsForm() {
+    setProductOptionsForm({
+      content: "",
+      headline: "",
+      stock: "",
+      id: "",
+    });
   }
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+
     if (!productForm.category_id.length) {
       Swal.fire({
         title: "Atenção",
@@ -195,7 +281,7 @@ export default function DashboardProducts() {
       });
       return;
     }
-    if (!productForm.description.length) {
+    if (editor?.getHTML() === "<p>Insira seu texto aqui</p>") {
       Swal.fire({
         title: "Atenção",
         text: "Insira uma descrição detalhada para o produto",
@@ -249,6 +335,24 @@ export default function DashboardProducts() {
       });
       return;
     }
+    if (productForm.stock_type === "") {
+      Swal.fire({
+        title: "Atenção",
+        text: "Selecione um tipo de estoque",
+        icon: "warning",
+        confirmButtonColor: defaultColors.primary["500"],
+      });
+      return;
+    }
+    if (productForm.stock_type === "CUSTOM" && !productsOptions.length) {
+      Swal.fire({
+        title: "Atenção",
+        text: "Insira pelo menos uma opção de estoque",
+        icon: "warning",
+        confirmButtonColor: defaultColors.primary["500"],
+      });
+      return;
+    }
 
     if (formType.type === "save") {
       setIsLoading(true);
@@ -266,10 +370,13 @@ export default function DashboardProducts() {
               .toLowerCase(),
             price: productForm.price,
             short_description: productForm.short_description,
-            description: productForm.description,
+            description: editor?.getHTML(),
             freight_priority: productForm.freight_priority,
             shipping_info: JSON.stringify(shippingInfo),
+            stock_type: productForm.stock_type,
+            stock: Number(productForm.stock),
           },
+          productOptions: productsOptions,
         })
         .then((response) => {
           Swal.fire({
@@ -279,6 +386,47 @@ export default function DashboardProducts() {
             confirmButtonColor: defaultColors.primary["500"],
           });
           setIsLoading(false);
+          setProductId(response.data.productId);
+          setModalThumbnail(true);
+        })
+        .catch((error) => {
+          setIsLoading(false);
+          getErrorMessage({ error });
+        });
+    } else {
+      setIsLoading(true);
+      api
+        .put("/products/update", {
+          product: {
+            id: productId,
+            category_id: productForm.category_id,
+            collection_id: productForm.collection_id,
+            name: productForm.name,
+            active: productForm.active,
+            slug: productForm.name
+              .normalize("NFD")
+              .replaceAll(/[^\w\s]/gi, "")
+              .replaceAll(" ", "-")
+              .toLowerCase(),
+            price: productForm.price,
+            short_description: productForm.short_description,
+            description: editor?.getHTML(),
+            freight_priority: productForm.freight_priority,
+            shipping_info: JSON.stringify(shippingInfo),
+            stock_type: productForm.stock_type,
+            stock: Number(productForm.stock),
+          },
+          productOptions: [],
+        })
+        .then((response) => {
+          Swal.fire({
+            title: "Sucesso",
+            text: response.data.message,
+            icon: "success",
+            confirmButtonColor: defaultColors.primary["500"],
+          });
+          setIsLoading(false);
+          getAllProducts(0, "update");
         })
         .catch((error) => {
           setIsLoading(false);
@@ -293,10 +441,275 @@ export default function DashboardProducts() {
     setProductForm({ ...productForm, category_id: id });
   }
 
+  function handleFinishThumbnail() {
+    setModalThumbnail(false);
+    reset();
+    resetProductOptionsForm();
+    getAllProducts(0, "update");
+  }
+
+  function handleThumbnail(id: string) {
+    const result = products.find((obj) => obj.id === id);
+    setThumbnail({
+      id: result?.thumbnail_id || null,
+      url: result?.thumbnail || null,
+    });
+    setProductId(result?.id || "");
+    setModalThumbnail(true);
+  }
+
+  function handleEdit(id: string) {
+    const result = products.find((obj) => obj.id === id);
+    if (result) {
+      const parsedShipping = JSON.parse(
+        result.shipping_info as unknown as string
+      );
+      setProductId(result.id);
+      setProductForm({
+        active: result.active,
+        category_id: result.category.id,
+        collection_id: result.collection.id,
+        freight_priority: result.freight_priority,
+        name: result.name,
+        price: result.price,
+        short_description: result.short_description,
+        slug: result.slug,
+        stock_type: result.stock_type,
+        stock: result.stock,
+      });
+      setShippingInfo({
+        height: parsedShipping.height,
+        lenght: parsedShipping.lenght,
+        weight: parsedShipping.weight,
+        width: parsedShipping.width,
+      });
+      if (result.stock_type === "CUSTOM") {
+        setProductsOptions(result.ProductOptions);
+      } else {
+        setProductsOptions([]);
+      }
+      editor?.commands.setContent(result.description);
+
+      scrollToTop();
+      setFormType({ type: "edit" });
+    }
+  }
+
+  function handleProductOptions() {
+    const result = productsOptions.find(
+      (obj) => obj.headline === productOptionsForm.headline
+    );
+    if (result) {
+      Swal.fire({
+        text: "Já existe uma opção nesta ordem!",
+        title: "Atenção",
+        icon: "warning",
+        confirmButtonColor: defaultColors.primary["500"],
+      });
+      return;
+    }
+    if (productOptionsForm.headline === "") {
+      Swal.fire({
+        text: "Insira uma ordem!",
+        title: "Atenção",
+        icon: "warning",
+        confirmButtonColor: defaultColors.primary["500"],
+      });
+      return;
+    }
+    if (productOptionsForm.content === "") {
+      Swal.fire({
+        text: "Insira uma identificação!",
+        title: "Atenção",
+        icon: "warning",
+        confirmButtonColor: defaultColors.primary["500"],
+      });
+      return;
+    }
+    if (productOptionsForm.stock === "") {
+      Swal.fire({
+        text: "Insira um valor para o estoque!",
+        title: "Atenção",
+        icon: "warning",
+        confirmButtonColor: defaultColors.primary["500"],
+      });
+      return;
+    }
+    setProductsOptions([
+      ...productsOptions,
+      {
+        content: productOptionsForm.content,
+        headline: productOptionsForm.headline,
+        stock: productOptionsForm.stock,
+        id: productOptionsForm.headline,
+      },
+    ]);
+
+    resetProductOptionsForm();
+  }
+
+  function handleDeleteProductOptions(order: string) {
+    const result = productsOptions.filter((obj) => obj.headline !== order);
+    setProductsOptions(result);
+  }
+
+  function handleEditProductOptions(id: string) {
+    const result = productsOptions.find((obj) => obj.id === id);
+    if (result) {
+      setProductOptionsForm({
+        id: result?.id,
+        content: result?.content,
+        headline: result?.headline,
+        stock: result?.stock,
+      });
+    }
+  }
+
+  function setEditProductOption() {
+    setIsProductOptionLoading(true);
+
+    api
+      .put("/product-options/update", {
+        options: { ...productOptionsForm },
+      })
+      .then((response) => {
+        setIsProductOptionLoading(false);
+        const { newProductOptions } = response.data;
+        const updated = productsOptions.map((prodOpt) => {
+          if (prodOpt.id === newProductOptions.id) {
+            return {
+              ...prodOpt,
+              content: newProductOptions.content,
+              headline: newProductOptions.headline,
+              stock: newProductOptions.stock,
+            };
+          }
+          return prodOpt;
+        });
+        setProductsOptions(updated);
+        Swal.fire({
+          title: "Sucesso",
+          text: response.data.message,
+          icon: "success",
+          confirmButtonColor: defaultColors.primary["500"],
+        });
+        resetProductOptionsForm();
+        getAllProducts(0, "update");
+      })
+      .catch((error) => {
+        setIsProductOptionLoading(false);
+        getErrorMessage({ error });
+      });
+  }
+
+  function deleteProductOption(id: string) {
+    Swal.fire({
+      title: "Confirmação!",
+      text: "Deseja excluir esta informação?",
+      icon: "question",
+      showCancelButton: true,
+      cancelButtonColor: theme.colors.red["600"],
+      showConfirmButton: true,
+      confirmButtonColor: defaultColors.primary["500"],
+      cancelButtonText: "Não",
+      confirmButtonText: "Sim",
+      showLoaderOnConfirm: true,
+    }).then((result) => {
+      if (result.isConfirmed) {
+        api
+          .delete(`/product-options/delete/${id}`)
+          .then((response) => {
+            Swal.fire({
+              title: "Sucesso",
+              text: response.data.message,
+              icon: "success",
+              confirmButtonColor: defaultColors.primary["500"],
+            });
+            const updated = productsOptions.filter((obj) => obj.id !== id);
+            setProductsOptions(updated);
+            getAllProducts(0, "update");
+          })
+          .catch((error) => {
+            getErrorMessage({ error });
+          });
+      }
+    });
+  }
+
+  function handleActiveProduct(id: string, active: boolean) {
+    api
+      .put("/products/update", {
+        product: {
+          id,
+          active: active,
+        },
+      })
+      .then((response) => {
+        Swal.fire({
+          title: "Sucesso",
+          text: response.data.message,
+          icon: "success",
+          confirmButtonColor: defaultColors.primary["500"],
+        });
+        setIsLoading(false);
+        getAllProducts(0, "update");
+      })
+      .catch((error) => {
+        setIsLoading(false);
+        getErrorMessage({ error });
+      });
+  }
+
+  function handlePromoProduct(id: string, active: boolean, rate: number) {
+    Swal.fire({
+      text: `Deseja ${
+        active ? "adicionar" : "retirar"
+      } este produto dos promocionais?`,
+      title: "Confirmação!",
+      icon: "question",
+      showCancelButton: true,
+      cancelButtonColor: theme.colors.red["600"],
+      showConfirmButton: true,
+      confirmButtonColor: defaultColors.primary["500"],
+      cancelButtonText: "Não",
+      confirmButtonText: "Sim",
+      showLoaderOnConfirm: true,
+      input: "number",
+      inputLabel: "Porcentagem do desconto",
+      inputValue: rate,
+    }).then((result) => {
+      if (result.isConfirmed) {
+        api
+          .put("/products/update", {
+            product: {
+              id,
+              active: active,
+              promotional: active,
+              promo_rate: Number(result.value),
+            },
+          })
+          .then((response) => {
+            Swal.fire({
+              title: "Sucesso",
+              text: response.data.message,
+              icon: "success",
+              confirmButtonColor: defaultColors.primary["500"],
+            });
+            setIsLoading(false);
+            getAllProducts(0, "update");
+          })
+          .catch((error) => {
+            setIsLoading(false);
+            getErrorMessage({ error });
+          });
+      }
+    });
+  }
+
   useEffect(() => {
     getCategories();
     getCollections();
-    getAllProducts();
+    getAllProducts(0, "update");
   }, []);
 
   return (
@@ -321,23 +734,37 @@ export default function DashboardProducts() {
                       "1fr",
                       "1fr",
                       "1fr 1fr",
-                      "1fr",
-                      "1fr 1fr",
+                      "1fr 1fr 1fr 1fr",
+                      "2fr 1fr 1fr 1fr",
                     ]}
                     gap={3}
                   >
                     <FormControl>
-                      <FormLabel mb={1}>
+                      <FormLabel>
+                        Nome{" "}
+                        {formType.type === "save" ? (
+                          <Tag colorScheme={"green"}>Criação</Tag>
+                        ) : (
+                          <Tag colorScheme={"blue"}>
+                            <TagLabel>Edição</TagLabel>
+                            <TagCloseButton onClick={() => reset()} />
+                          </Tag>
+                        )}
+                      </FormLabel>
+                      <Input
+                        value={productForm.name}
+                        onChange={(e) =>
+                          setProductForm({
+                            ...productForm,
+                            name: e.target.value,
+                          })
+                        }
+                      />
+                    </FormControl>
+                    <FormControl>
+                      <FormLabel>
                         <HStack>
-                          <Text>Selecione uma cateogoria</Text>{" "}
-                          {formType.type === "save" ? (
-                            <Tag colorScheme={"green"}>Criação</Tag>
-                          ) : (
-                            <Tag colorScheme={"blue"}>
-                              <TagLabel>Edição</TagLabel>
-                              <TagCloseButton onClick={() => reset()} />
-                            </Tag>
-                          )}
+                          <Text>Cateogoria</Text>{" "}
                         </HStack>
                       </FormLabel>
                       <Select
@@ -354,7 +781,7 @@ export default function DashboardProducts() {
                       </Select>
                     </FormControl>
                     <FormControl>
-                      <FormLabel mb={1}>Selecione uma sub-categoria</FormLabel>
+                      <FormLabel>Sub-categoria</FormLabel>
                       <Select
                         focusBorderColor={defaultColors.primary["500"]}
                         value={productForm.collection_id}
@@ -372,29 +799,6 @@ export default function DashboardProducts() {
                           </option>
                         ))}
                       </Select>
-                    </FormControl>
-                  </Grid>
-                  <Grid
-                    templateColumns={[
-                      "1fr",
-                      "1fr",
-                      "1fr 1fr",
-                      "1fr",
-                      "1fr 1fr",
-                    ]}
-                    gap={3}
-                  >
-                    <FormControl>
-                      <FormLabel>Nome</FormLabel>
-                      <Input
-                        value={productForm.name}
-                        onChange={(e) =>
-                          setProductForm({
-                            ...productForm,
-                            name: e.target.value,
-                          })
-                        }
-                      />
                     </FormControl>
                     <FormControl>
                       <FormLabel>Preço</FormLabel>
@@ -433,13 +837,19 @@ export default function DashboardProducts() {
                   <FormControl>
                     <FormLabel>Descrição detalhada</FormLabel>
 
-                    <Box rounded={"md"} borderWidth="1px" p={2}>
-                      <Tiptap
-                        onChange={(e) =>
-                          setProductForm({ ...productForm, description: e })
-                        }
-                        value={productForm.description}
-                      />
+                    <Box
+                      rounded={"md"}
+                      borderWidth={"1px"}
+                      p={2}
+                      boxShadow={
+                        editor?.isFocused
+                          ? `0px 0px 0px 2px ${defaultColors.primary["500"]}`
+                          : ""
+                      }
+                      transition="all .1s"
+                    >
+                      <TiptapMenuBar editor={editor} />
+                      <Tiptap editor={editor} />
                     </Box>
                   </FormControl>
 
@@ -465,6 +875,7 @@ export default function DashboardProducts() {
                           })
                         }
                       >
+                        <option value={""}>Selecione uma opção</option>
                         <option value={"FAST"}>Entrega rápida</option>
                         <option value={"NORMAL"}>Entrega normal</option>
                       </Select>
@@ -538,6 +949,190 @@ export default function DashboardProducts() {
                       </InputGroup>
                     </FormControl>
                   </Grid>
+
+                  <Grid
+                    templateColumns={[
+                      "repeat(1, 1fr)",
+                      "repeat(2, 1fr)",
+                      "repeat(2, 1fr)",
+                      "repeat(2, 1fr)",
+                      "repeat(2, 1fr)",
+                    ]}
+                    gap={3}
+                  >
+                    <FormControl>
+                      <FormLabel>Tipo de Estoque</FormLabel>
+                      <Select
+                        focusBorderColor={defaultColors.primary["500"]}
+                        value={productForm.stock_type}
+                        onChange={(e) =>
+                          setProductForm({
+                            ...productForm,
+                            stock_type: e.target.value,
+                          })
+                        }
+                      >
+                        <option value={""}>Selecione uma opção</option>
+                        <option value={"OFF"}>Sem Estoque</option>
+                        <option value={"UNITY"}>Unitário</option>
+                        <option value={"CUSTOM"}>Personalizado</option>
+                      </Select>
+                    </FormControl>
+                    <FormControl>
+                      <FormLabel>Quantidade em estoque</FormLabel>
+                      <Input
+                        value={productForm.stock || ""}
+                        onChange={(e) =>
+                          setProductForm({
+                            ...productForm,
+                            stock: e.target.value,
+                          })
+                        }
+                        isDisabled={productForm.stock_type !== "UNITY"}
+                      />
+                    </FormControl>
+                  </Grid>
+
+                  {productForm.stock_type === "CUSTOM" && (
+                    <>
+                      <Grid
+                        templateColumns={[
+                          "1fr 1fr",
+                          "80px 1fr 1fr 110px",
+                          "80px 1fr 1fr 110px",
+                          "80px 1fr 1fr 110px",
+                          "80px 1fr 1fr 110px",
+                        ]}
+                        gap={3}
+                        alignItems="end"
+                      >
+                        <FormControl>
+                          <FormLabel>Ordem</FormLabel>
+                          <Input
+                            value={productOptionsForm.headline}
+                            onChange={(e) =>
+                              setProductOptionsForm({
+                                ...productOptionsForm,
+                                headline: e.target.value,
+                              })
+                            }
+                            isReadOnly={formType.type === "edit"}
+                          />
+                        </FormControl>
+                        <FormControl>
+                          <FormLabel>Identificação</FormLabel>
+                          <Input
+                            value={productOptionsForm.content}
+                            onChange={(e) =>
+                              setProductOptionsForm({
+                                ...productOptionsForm,
+                                content: e.target.value,
+                              })
+                            }
+                          />
+                        </FormControl>
+                        <FormControl>
+                          <FormLabel>Estoque</FormLabel>
+                          <Input
+                            value={productOptionsForm.stock || ""}
+                            onChange={(e) =>
+                              setProductOptionsForm({
+                                ...productOptionsForm,
+                                stock: e.target.value,
+                              })
+                            }
+                          />
+                        </FormControl>
+                        {formType.type === "save" ? (
+                          <Button
+                            colorScheme={defaultColors.primaryName}
+                            variant="ghost"
+                            w="full"
+                            onClick={handleProductOptions}
+                          >
+                            Add
+                          </Button>
+                        ) : (
+                          <Button
+                            colorScheme={defaultColors.primaryName}
+                            variant="ghost"
+                            w="full"
+                            onClick={setEditProductOption}
+                            isLoading={isProductOptionLoading}
+                          >
+                            Salvar
+                          </Button>
+                        )}
+                      </Grid>
+
+                      <TableContainer>
+                        <Table size={"sm"}>
+                          <Thead>
+                            <Tr bg={"gray.100"}>
+                              <Th>Ordem</Th>
+                              <Th>Identificação</Th>
+                              <Th>Estoque</Th>
+                              <Th w="10" textAlign={"center"}>
+                                Ações
+                              </Th>
+                            </Tr>
+                          </Thead>
+                          <Tbody>
+                            {productsOptions.map((prodOpt) => (
+                              <Tr key={prodOpt.headline}>
+                                <Td>{prodOpt.headline}</Td>
+                                <Td>{prodOpt.content}</Td>
+                                <Td>{prodOpt.stock}</Td>
+                                <Td textAlign={"center"}>
+                                  {formType.type === "save" ? (
+                                    <IconButton
+                                      aria-label="Remove product opt"
+                                      icon={<Trash size={17} />}
+                                      colorScheme="red"
+                                      size={"sm"}
+                                      variant="ghost"
+                                      onClick={() =>
+                                        handleDeleteProductOptions(
+                                          prodOpt.headline
+                                        )
+                                      }
+                                    />
+                                  ) : (
+                                    <>
+                                      <HStack>
+                                        <IconButton
+                                          aria-label="Remove product opt"
+                                          icon={<Trash size={17} />}
+                                          colorScheme="red"
+                                          size={"sm"}
+                                          variant="ghost"
+                                          onClick={() =>
+                                            deleteProductOption(prodOpt.id)
+                                          }
+                                        />
+                                        <IconButton
+                                          aria-label="Edit product opt"
+                                          icon={<Edit size={17} />}
+                                          colorScheme={
+                                            defaultColors.primaryName
+                                          }
+                                          size={"sm"}
+                                          variant="ghost"
+                                          onClick={() =>
+                                            handleEditProductOptions(prodOpt.id)
+                                          }
+                                        />
+                                      </HStack>
+                                    </>
+                                  )}
+                                </Td>
+                              </Tr>
+                            ))}
+                          </Tbody>
+                        </Table>
+                      </TableContainer>
+                    </>
+                  )}
                 </Grid>
 
                 <Flex justify={"end"}>
@@ -607,13 +1202,13 @@ export default function DashboardProducts() {
                   <Table variant={"striped"} size="sm">
                     <Thead>
                       <Tr>
-                        <Th w="16" textAlign={"center"}>
+                        <Th w="14" textAlign={"center"}>
                           thumb
                         </Th>
                         <Th w="16" textAlign={"center"}>
                           Ativo?
                         </Th>
-                        <Th w="16" textAlign={"center"}>
+                        <Th w="20" textAlign={"center"}>
                           Promo?
                         </Th>
                         <Th minW={"56"}>Nome</Th>
@@ -636,23 +1231,57 @@ export default function DashboardProducts() {
                               <Switch
                                 colorScheme={defaultColors.primaryName}
                                 isChecked={product.active}
+                                onChange={(e) =>
+                                  handleActiveProduct(
+                                    product.id,
+                                    e.target.checked
+                                  )
+                                }
                               />
                             </Flex>
                           </Td>
                           <Td textAlign={"center"}>
-                            <Flex justify={"center"}>
+                            <Flex justify={"start"} align="center" gap={1}>
                               <Switch
                                 colorScheme={defaultColors.primaryName}
                                 isChecked={product.promotional}
+                                onChange={(e) =>
+                                  handlePromoProduct(
+                                    product.id,
+                                    e.target.checked,
+                                    product.promo_rate
+                                  )
+                                }
                               />
+                              {product.promotional && (
+                                <Tag colorScheme={"red"}>
+                                  -{product.promo_rate}%
+                                </Tag>
+                              )}
                             </Flex>
                           </Td>
                           <Td>{product.name}</Td>
                           <Td>{product.slug}</Td>
                           <Td>
-                            {product.category.name} - {product.collection.name}
+                            {product.category.name} / {product.collection.name}
                           </Td>
-                          <Td isNumeric>{formatMoney(product.price)}</Td>
+                          <Td isNumeric>
+                            {product.promotional ? (
+                              <HStack>
+                                <Text fontSize={"xs"} textDecor="line-through">
+                                  {formatMoney(product.price)}
+                                </Text>
+                                <Text>
+                                  {calcDiscount(
+                                    Number(product.price),
+                                    product.promo_rate
+                                  )}
+                                </Text>
+                              </HStack>
+                            ) : (
+                              <>{formatMoney(product.price)}</>
+                            )}
+                          </Td>
                           <Td textAlign={"center"}>
                             <HStack justify={"center"} spacing={1}>
                               <Tooltip label="Alterar Imagem" hasArrow>
@@ -662,6 +1291,7 @@ export default function DashboardProducts() {
                                   size="sm"
                                   colorScheme={defaultColors.primaryName}
                                   variant="ghost"
+                                  onClick={() => handleThumbnail(product.id)}
                                 />
                               </Tooltip>
                               <Tooltip label="Editar" hasArrow>
@@ -671,6 +1301,7 @@ export default function DashboardProducts() {
                                   size="sm"
                                   colorScheme={defaultColors.primaryName}
                                   variant="ghost"
+                                  onClick={() => handleEdit(product.id)}
                                 />
                               </Tooltip>
                             </HStack>
@@ -689,12 +1320,41 @@ export default function DashboardProducts() {
               colorScheme={defaultColors.primaryName}
               size="sm"
               variant={"ghost"}
+              isDisabled={products.length >= totalProducts}
+              onClick={() => handleMore()}
             >
               MOSTRAR MAIS
             </Button>
           </Flex>
         </Box>
       </DashboardLayout>
+
+      <Modal
+        isOpen={modalThumbnail}
+        onClose={() => setModalThumbnail(false)}
+        size={"xs"}
+      >
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>Imagem</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody pb={5}>
+            <Flex align={"center"}>
+              {modalThumbnail && (
+                <Uploader
+                  height={"275px"}
+                  width={"275px"}
+                  to="product"
+                  thumbnail={thumbnail}
+                  destinationId={productId}
+                  handleClose={() => handleFinishThumbnail()}
+                  handleDelete={() => getAllProducts(page, "update")}
+                />
+              )}
+            </Flex>
+          </ModalBody>
+        </ModalContent>
+      </Modal>
     </Fragment>
   );
 }

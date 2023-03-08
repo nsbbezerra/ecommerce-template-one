@@ -22,7 +22,7 @@ export default function TiptapMenuBar({ editor }: Props) {
   }
 
   return (
-    <Wrap py={2} mb={2} align="center">
+    <Wrap pt={2} pb={4} mb={2} align="center" borderBottomWidth={"1px"}>
       <Tooltip label="Negrito" hasArrow>
         <EditorBarButton
           aria-label="Bold"

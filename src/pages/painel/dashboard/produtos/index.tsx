@@ -52,6 +52,7 @@ import {
   Edit,
   ImagePlus,
   PackageOpen,
+  RefreshCw,
   Save,
   Search,
   Trash,
@@ -125,6 +126,9 @@ export default function DashboardProducts() {
   );
 
   const [formType, setFormType] = useState<FormTypeProps>({ type: "save" });
+  const [productOptFormType, setProductOptFormType] = useState<FormTypeProps>({
+    type: "save",
+  });
 
   const [modalThumbnail, setModalThumbnail] = useState<boolean>(false);
   const [thumbnail, setThumbnail] = useState<ThumbnailProps>({
@@ -155,6 +159,10 @@ export default function DashboardProducts() {
     CollectionsWithRelationshipEntity[]
   >([]);
 
+  const [search, setSearch] = useState<string>("");
+
+  const [typeSearch, setTypeSearch] = useState<string>("all");
+
   function getCategories() {
     setIsFetching(true);
     api
@@ -184,7 +192,27 @@ export default function DashboardProducts() {
       });
   }
 
+  function searchProducts() {
+    setIsFetching(true);
+    api
+      .post(`/products/search/${typeSearch}`, {
+        name: search,
+      })
+      .then((response) => {
+        setProducts(response.data);
+        setIsFetching(false);
+      })
+      .catch((error) => {
+        getErrorMessage({ error });
+        setIsFetching(false);
+      });
+  }
+
   function getAllProducts(actualPage: number, mode: "handleMore" | "update") {
+    if (typeSearch !== "all") {
+      searchProducts();
+      return;
+    }
     setIsFetching(true);
     setPage(actualPage);
     api
@@ -231,6 +259,8 @@ export default function DashboardProducts() {
     });
     setFormType({ type: "save" });
     editor?.commands.clearContent();
+    setProductsOptions([]);
+    setProductId("");
   }
 
   function resetProductOptionsForm() {
@@ -240,6 +270,12 @@ export default function DashboardProducts() {
       stock: "",
       id: "",
     });
+    setProductOptFormType({ type: "save" });
+  }
+
+  function resetMaster() {
+    reset();
+    resetProductOptionsForm();
   }
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -554,6 +590,7 @@ export default function DashboardProducts() {
   }
 
   function handleEditProductOptions(id: string) {
+    setProductOptFormType({ type: "edit" });
     const result = productsOptions.find((obj) => obj.id === id);
     if (result) {
       setProductOptionsForm({
@@ -566,40 +603,77 @@ export default function DashboardProducts() {
   }
 
   function setEditProductOption() {
-    setIsProductOptionLoading(true);
-
-    api
-      .put("/product-options/update", {
-        options: { ...productOptionsForm },
-      })
-      .then((response) => {
-        setIsProductOptionLoading(false);
-        const { newProductOptions } = response.data;
-        const updated = productsOptions.map((prodOpt) => {
-          if (prodOpt.id === newProductOptions.id) {
-            return {
-              ...prodOpt,
-              content: newProductOptions.content,
-              headline: newProductOptions.headline,
-              stock: newProductOptions.stock,
-            };
-          }
-          return prodOpt;
+    if (productOptFormType.type === "edit") {
+      setIsProductOptionLoading(true);
+      api
+        .put("/product-options/update", {
+          options: { ...productOptionsForm },
+        })
+        .then((response) => {
+          setIsProductOptionLoading(false);
+          const { newProductOptions } = response.data;
+          const updated = productsOptions.map((prodOpt) => {
+            if (prodOpt.id === newProductOptions.id) {
+              return {
+                ...prodOpt,
+                content: newProductOptions.content,
+                headline: newProductOptions.headline,
+                stock: newProductOptions.stock,
+              };
+            }
+            return prodOpt;
+          });
+          setProductsOptions(updated);
+          Swal.fire({
+            title: "Sucesso",
+            text: response.data.message,
+            icon: "success",
+            confirmButtonColor: defaultColors.primary["500"],
+          });
+          resetProductOptionsForm();
+          getAllProducts(0, "update");
+        })
+        .catch((error) => {
+          setIsProductOptionLoading(false);
+          getErrorMessage({ error });
         });
-        setProductsOptions(updated);
-        Swal.fire({
-          title: "Sucesso",
-          text: response.data.message,
-          icon: "success",
-          confirmButtonColor: defaultColors.primary["500"],
+    } else {
+      setIsProductOptionLoading(true);
+      api
+        .post("/product-options/save", {
+          options: {
+            headline: productOptionsForm.headline,
+            content: productOptionsForm.content,
+            stock: productOptionsForm.stock,
+            product_id: productId,
+          },
+        })
+        .then((response) => {
+          const newOptions = response.data.productOptions;
+          Swal.fire({
+            title: "Sucesso",
+            text: response.data.message,
+            icon: "success",
+            confirmButtonColor: defaultColors.primary["500"],
+          });
+          setProductsOptions([
+            ...productsOptions,
+            {
+              content: newOptions.content,
+              headline: newOptions.headline,
+              id: newOptions.id,
+              stock: newOptions.stock,
+            },
+          ]);
+          setIsProductOptionLoading(false);
+          getAllProducts(0, "update");
+          resetProductOptionsForm();
+        })
+        .catch((error) => {
+          setIsProductOptionLoading(false);
+          getErrorMessage({ error });
         });
-        resetProductOptionsForm();
-        getAllProducts(0, "update");
-      })
-      .catch((error) => {
-        setIsProductOptionLoading(false);
-        getErrorMessage({ error });
-      });
+    }
   }
 
   function deleteProductOption(id: string) {
@@ -747,7 +821,7 @@ export default function DashboardProducts() {
                         ) : (
                           <Tag colorScheme={"blue"}>
                             <TagLabel>Edição</TagLabel>
-                            <TagCloseButton onClick={() => reset()} />
+                            <TagCloseButton onClick={() => resetMaster()} />
                           </Tag>
                         )}
                       </FormLabel>
@@ -998,10 +1072,10 @@ export default function DashboardProducts() {
                       <Grid
                         templateColumns={[
                           "1fr 1fr",
-                          "80px 1fr 1fr 110px",
-                          "80px 1fr 1fr 110px",
-                          "80px 1fr 1fr 110px",
-                          "80px 1fr 1fr 110px",
+                          "80px 1fr 1fr 150px",
+                          "80px 1fr 1fr 150px",
+                          "80px 1fr 1fr 150px",
+                          "80px 1fr 1fr 150px",
                         ]}
                         gap={3}
                         alignItems="end"
@@ -1016,7 +1090,7 @@ export default function DashboardProducts() {
                                 headline: e.target.value,
                               })
                             }
-                            isReadOnly={formType.type === "edit"}
+                            isReadOnly={productOptFormType.type === "edit"}
                           />
                         </FormControl>
                         <FormControl>
@@ -1046,22 +1120,33 @@ export default function DashboardProducts() {
                         {formType.type === "save" ? (
                           <Button
                             colorScheme={defaultColors.primaryName}
-                            variant="ghost"
+                            variant="outline"
                             w="full"
                             onClick={handleProductOptions}
                           >
                             Add
                           </Button>
                         ) : (
-                          <Button
-                            colorScheme={defaultColors.primaryName}
-                            variant="ghost"
-                            w="full"
-                            onClick={setEditProductOption}
-                            isLoading={isProductOptionLoading}
-                          >
-                            Salvar
-                          </Button>
+                          <HStack>
+                            <Button
+                              colorScheme={defaultColors.primaryName}
+                              variant="outline"
+                              w="full"
+                              onClick={setEditProductOption}
+                              isLoading={isProductOptionLoading}
+                            >
+                              Salvar
+                            </Button>
+                            <Tooltip label="Resetar">
+                              <IconButton
+                                icon={<RefreshCw size={17} />}
+                                variant="outline"
+                                aria-label="New product options"
+                                colorScheme="red"
+                                onClick={resetProductOptionsForm}
+                              />
+                            </Tooltip>
+                          </HStack>
                         )}
                       </Grid>
 
@@ -1153,23 +1238,41 @@ export default function DashboardProducts() {
 
         <Box shadow={"md"} bg="white" p={3} rounded="md">
           <Flex
-            align={"center"}
+            align={["start", "center", "center", "center", "center"]}
             justify="space-between"
             mb={3}
             pb={3}
             borderBottomWidth="1px"
             gap={3}
+            direction={["column", "row", "row", "row", "row"]}
           >
             <Text fontWeight={"bold"} color="gray.600" fontSize={"sm"}>
               Mostrando {products.length} itens
             </Text>
 
             <HStack>
-              <Input placeholder="Digite para buscar" />
+              <Select
+                focusBorderColor={defaultColors.primary["500"]}
+                value={typeSearch}
+                onChange={(e) => setTypeSearch(e.target.value)}
+                w="44"
+              >
+                <option value={"all"}>Todos</option>
+                <option value={"block"}>Bloqueados</option>
+                <option value={"promo"}>Promocionais</option>
+                <option value={"name"}>Por nome</option>
+              </Select>
+              <Input
+                placeholder="Digite para buscar"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                isDisabled={typeSearch !== "name"}
+              />
               <IconButton
                 aria-label="Buscar categoria"
                 icon={<Search size={18} />}
                 colorScheme={defaultColors.primaryName}
+                onClick={() => getAllProducts(0, "update")}
               />
             </HStack>
           </Flex>
@@ -1315,17 +1418,19 @@ export default function DashboardProducts() {
             </>
           )}
 
-          <Flex borderTopWidth={"1px"} mt={3} justify="center" pt={3}>
-            <Button
-              colorScheme={defaultColors.primaryName}
-              size="sm"
-              variant={"ghost"}
-              isDisabled={products.length >= totalProducts}
-              onClick={() => handleMore()}
-            >
-              MOSTRAR MAIS
-            </Button>
-          </Flex>
+          {typeSearch === "all" && (
+            <Flex justify="center" pt={3}>
+              <Button
+                colorScheme={defaultColors.primaryName}
+                size="sm"
+                variant={"ghost"}
+                isDisabled={products.length >= totalProducts}
+                onClick={() => handleMore()}
+              >
+                MOSTRAR MAIS
+              </Button>
+            </Flex>
+          )}
         </Box>
       </DashboardLayout>
 

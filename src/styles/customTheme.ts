@@ -1,9 +1,10 @@
 import { extendTheme, theme, defineStyleConfig } from "@chakra-ui/react";
-import { Roboto } from "next/font/google";
+import { Karla } from "next/font/google";
+import { IconButton } from "./IconButton";
 
-const roboto = Roboto({
+const roboto = Karla({
   subsets: ["latin"],
-  weight: ["100", "300", "400", "500", "700", "900"],
+  weight: ["300", "400", "700", "800"],
 });
 
 const FormLabel = defineStyleConfig({
@@ -13,14 +14,10 @@ const FormLabel = defineStyleConfig({
   },
 });
 
-const IconButton = defineStyleConfig({
-  baseStyle: {
-    rounded: "full",
-  },
-});
-
 const customTheme = extendTheme({
   ...theme,
+  initialColorMode: "light",
+  useSystemColorMode: false,
   styles: {
     global: {
       body: {
@@ -30,6 +27,7 @@ const customTheme = extendTheme({
   },
   fonts: {
     body: roboto.style.fontFamily,
+    heading: roboto.style.fontFamily,
   },
   components: {
     FormLabel,

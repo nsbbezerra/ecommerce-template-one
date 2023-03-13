@@ -22,6 +22,7 @@ import {
   User,
   Users,
 } from "lucide-react";
+import { useRouter } from "next/router";
 import { Fragment, ReactNode } from "react";
 import HeadApp from "../app/Head";
 import DashboardSider from "./Sider";
@@ -43,6 +44,11 @@ interface Props {
 
 export default function DashboardLayout({ pageTitle, children, page }: Props) {
   const { isOpen, onOpen, onClose } = useDisclosure();
+  const { push } = useRouter();
+
+  function logout() {
+    push("/");
+  }
 
   return (
     <Fragment>
@@ -144,6 +150,7 @@ export default function DashboardLayout({ pageTitle, children, page }: Props) {
                   icon={<LogOut />}
                   aria-label="Logout-button"
                   colorScheme={defaultColors.primaryName}
+                  onClick={logout}
                 />
               </Tooltip>
             </HStack>

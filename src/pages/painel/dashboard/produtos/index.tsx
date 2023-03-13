@@ -757,7 +757,6 @@ export default function DashboardProducts() {
           .put("/products/update", {
             product: {
               id,
-              active: active,
               promotional: active,
               promo_rate: Number(result.value),
             },
@@ -1315,7 +1314,6 @@ export default function DashboardProducts() {
                           Promo?
                         </Th>
                         <Th minW={"56"}>Nome</Th>
-                        <Th minW={"44"}>Slug</Th>
                         <Th>Categoria/Sub-categoria</Th>
                         <Th isNumeric>Preço</Th>
                         <Th w="36" textAlign={"center"}>
@@ -1364,7 +1362,6 @@ export default function DashboardProducts() {
                             </Flex>
                           </Td>
                           <Td>{product.name}</Td>
-                          <Td>{product.slug}</Td>
                           <Td>
                             {product.category.name} / {product.collection.name}
                           </Td>

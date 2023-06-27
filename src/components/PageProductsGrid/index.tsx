@@ -1,11 +1,11 @@
-import Button from "../Button";
 import Image from "next/image";
+import Button from "../Button";
 import { ShoppingCart } from "lucide-react";
 
-export default function ProductsGrid() {
+export default function PageProductsGrid() {
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 md:gap-5">
-      <div className="rounded-theme overflow-hidden bg-white shadow-lg w-full h-fit">
+    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-2 lg:grid-cols-3 gap-2 md:gap-5">
+      <div className="rounded-theme overflow-hidden bg-white shadow-md w-full h-fit">
         <div className="relative w-full">
           <Image
             src="https://img.freepik.com/psd-premium/ola-venda-de-produto-de-outono-midia-social-e-post-design-do-instagram_407398-461.jpg?w=2000"
@@ -33,7 +33,7 @@ export default function ProductsGrid() {
           </Button>
         </div>
       </div>
-      <div className="rounded-theme overflow-hidden bg-white shadow-lg w-full h-fit">
+      <div className="rounded-theme overflow-hidden bg-white shadow-md w-full h-fit">
         <div className="relative w-full">
           <Image
             src="https://img.freepik.com/psd-premium/ola-venda-de-produto-de-outono-midia-social-e-post-design-do-instagram_407398-461.jpg?w=2000"
@@ -61,7 +61,7 @@ export default function ProductsGrid() {
           </Button>
         </div>
       </div>
-      <div className="rounded-theme overflow-hidden bg-white shadow-lg w-full h-fit">
+      <div className="rounded-theme overflow-hidden bg-white shadow-md w-full h-fit">
         <div className="relative w-full">
           <Image
             src="https://img.freepik.com/psd-premium/ola-venda-de-produto-de-outono-midia-social-e-post-design-do-instagram_407398-461.jpg?w=2000"
@@ -89,7 +89,7 @@ export default function ProductsGrid() {
           </Button>
         </div>
       </div>
-      <div className="rounded-theme overflow-hidden bg-white shadow-lg w-full h-fit">
+      <div className="rounded-theme overflow-hidden bg-white shadow-md w-full h-fit">
         <div className="relative w-full">
           <Image
             src="https://img.freepik.com/psd-premium/ola-venda-de-produto-de-outono-midia-social-e-post-design-do-instagram_407398-461.jpg?w=2000"

@@ -124,7 +124,7 @@ export default function IndexHeader() {
                   <span>CATEGORIAS</span>
                 </button>
               </MenuHandler>
-              <MenuList className="w-64 p-0 rounded-theme overflow-hidden max-h-[70vh] divide-y bg-opacity-70 bg-white backdrop-blur-sm">
+              <MenuList className="w-64 p-0 rounded-theme overflow-hidden max-h-[70vh] divide-y bg-opacity-80 bg-white backdrop-blur-sm">
                 <MenuItem className="text-zinc-900 gap-3 flex items-center rounded-none hover:bg-blue-200">
                   <Avatar
                     src="https://storetng.vteximg.com.br/arquivos/ids/412221-690-690/BNMKCW33_950_1-CAMISETA-BASICA-GOLA-LARGA.jpg?v=637703412713570000"
@@ -171,7 +171,12 @@ export default function IndexHeader() {
         </div>
       </header>
 
-      <Drawer open={drawer} onClose={() => setDrawer(false)} placement="right">
+      <Drawer
+        open={drawer}
+        onClose={() => setDrawer(false)}
+        placement="right"
+        overlayProps={{ className: "fixed" }}
+      >
         <div className="relative w-full h-full">
           <div className="relative w-52 p-5">
             <Image
@@ -209,11 +214,11 @@ export default function IndexHeader() {
       <nav
         className={`fixed left-0 right-0 top-0 bg-white h-[60px] z-10 shadow-md bg-opacity-80 backdrop-blur-sm px-5 transition-all ${
           showTopBar ? "mt-0" : "-mt-[100%]"
-        } delay-200`}
+        }`}
       >
         <div className="container max-w-6xl mx-auto h-full flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="relative w-40 mr-16">
+            <div className="relative w-36 sm:w-40 sm:mr-16">
               <Image
                 src={"logo.svg"}
                 alt={`${appConfigs.companyName} logo`}
@@ -221,7 +226,7 @@ export default function IndexHeader() {
                 height={139}
               />
             </div>
-            <div className="flex items-center gap-5">
+            <div className="hidden lg:flex items-center gap-5">
               <button className="flex items-center font-semibold gap-2 text-blue-500 hover:text-blue-600 transition-colors active:text-blue-500">
                 <Home className="w-3.5 h-3.5" />
                 Início
@@ -253,6 +258,12 @@ export default function IndexHeader() {
                 1
               </span>
             </div>
+            <button
+              className="w-10 h-10 flex justify-center items-center rounded-theme text-blue-500 lg:hidden"
+              onClick={() => setDrawer(true)}
+            >
+              <Bars className="w-8 h-8" />
+            </button>
           </div>
         </div>
       </nav>

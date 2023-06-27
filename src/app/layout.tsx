@@ -1,8 +1,6 @@
 import { appConfigs } from "@/configs";
 import "./globals.css";
-import { Karla } from "next/font/google";
-
-const karla = Karla({ subsets: ["latin"] });
+import { defaultFont } from "@/configs/fonts";
 
 export const metadata = {
   title: `${appConfigs.companyName} | ${appConfigs.companyDescription}`,
@@ -16,7 +14,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="pt-br">
-      <body className={`${karla.className} bg-gray-50`}>{children}</body>
+      <body className={`${defaultFont.className} bg-gray-50`}>{children}</body>
     </html>
   );
 }

@@ -5,7 +5,7 @@ import {
   Button,
   Chip,
   Footer,
-  IndexHeader,
+  OtherHeader,
   InputText,
   List,
   PageProductsGrid,
@@ -17,6 +17,7 @@ import {
   ChevronRight,
   Circle,
   Plus,
+  SearchIcon,
   TagsIcon,
   Trash,
   X,
@@ -160,10 +161,10 @@ export default function Produtos() {
 
   return (
     <Fragment>
-      <IndexHeader />
+      <OtherHeader title="PRODUTOS" />
       <main className="px-5 mt-10">
         <div className="container mx-auto max-w-6xl">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-5 items-center bg-white p-2 rounded-theme shadow-sm">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-5 items-center bg-white p-2 rounded-theme shadow-sm">
             <div className="w-full">
               <InputText label="Buscar..." className="w-full" />
             </div>
@@ -172,7 +173,7 @@ export default function Produtos() {
                 Mostrando 30 de 50 resultados
               </span>
             </div>
-            <div className="lg:col-span-2 flex justify-end w-full">
+            <div className="lg:col-span-2 flex flex-col md:flex-row justify-end w-full gap-3">
               <div className="flex items-center gap-2 w-full lg:w-fit">
                 <span className="font-light text-zinc-700 shrink-0 hidden lg:block">
                   Filtre por
@@ -185,6 +186,12 @@ export default function Produtos() {
                   <Select.Option>Material Tailwind Svelte</Select.Option>
                 </Select.Root>
               </div>
+              <Button
+                icon={<SearchIcon className="w-3.5 h-3.5 shrink-0" />}
+                className="w-full md:w-40"
+              >
+                Buscar
+              </Button>
             </div>
           </div>
 

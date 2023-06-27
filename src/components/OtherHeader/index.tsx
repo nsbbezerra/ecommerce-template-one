@@ -9,26 +9,21 @@ import {
   User2,
   ShoppingCart,
   Search,
-  List,
   Home,
   Info,
   Menu as Bars,
   X,
 } from "lucide-react";
 import Image from "next/image";
-import {
-  Drawer,
-  Menu,
-  MenuHandler,
-  MenuList,
-  MenuItem,
-  Avatar,
-} from "@material-tailwind/react";
+import { Drawer } from "@material-tailwind/react";
 import { Fragment, useEffect, useState } from "react";
-import { defaultFont } from "@/configs/fonts";
 import Link from "next/link";
 
-export default function IndexHeader() {
+interface Props {
+  title: string;
+}
+
+export default function OtherHeader({ title }: Props) {
   const [drawer, setDrawer] = useState<boolean>(false);
   const [showTopBar, setShowTopBar] = useState<boolean>(false);
 
@@ -74,7 +69,7 @@ export default function IndexHeader() {
           </div>
         </div>
 
-        <div className="h-28 px-5 w-full flex items-center">
+        <div className="h-24 px-5 w-full flex items-center">
           <div className="container max-w-6xl mx-auto grid grid-cols-2 lg:grid-cols-[260px_1fr_260px]">
             <div className="relative w-52">
               <Image
@@ -85,12 +80,26 @@ export default function IndexHeader() {
               />
             </div>
             <div className="hidden w-full lg:flex items-center">
-              <div className="relative w-full flex items-center">
-                <input
-                  className="w-full outline-none border rounded-theme h-12 px-4 focus:ring-2 focus:ring-blue-500"
-                  placeholder="Buscar por produtos"
-                />
-                <Search className="absolute right-4 text-blue-500" />
+              <div className="items-center gap-10 hidden lg:flex">
+                <Link
+                  href={"/"}
+                  className="flex items-center font-semibold gap-2 text-blue-500 hover:text-blue-600 transition-colors active:text-blue-500"
+                >
+                  <Home className="w-3.5 h-3.5" />
+                  Início
+                </Link>
+                <button className="flex items-center font-semibold gap-2 text-blue-500 hover:text-blue-600 transition-colors active:text-blue-500">
+                  <ShoppingCart className="w-3.5 h-3.5" />
+                  Compre por
+                </button>
+                <button className="flex items-center font-semibold gap-2 text-blue-500 hover:text-blue-600 transition-colors active:text-blue-500">
+                  <Info className="w-3.5 h-3.5" />
+                  Sobre Nós
+                </button>
+                <button className="flex items-center font-semibold gap-2 text-blue-500 hover:text-blue-600 transition-colors active:text-blue-500">
+                  <Phone className="w-3.5 h-3.5" />
+                  Contato
+                </button>
               </div>
             </div>
             <div className="w-full flex items-center justify-end gap-2">
@@ -109,67 +118,8 @@ export default function IndexHeader() {
           </div>
         </div>
 
-        <div className="bg-blue-500 w-full px-5 h-14">
-          <div className="container max-w-6xl mx-auto flex items-center gap-3 h-full justify-between lg:justify-start">
-            <Menu
-              animate={{
-                mount: { y: 0 },
-                unmount: { y: 25 },
-              }}
-            >
-              <MenuHandler>
-                <button className="flex gap-2 h-full items-center bg-green-500 w-64 px-5 font-semibold text-white hover:bg-green-600 transition-colors mr-4">
-                  <List className="w-5 h-5" />
-                  <span>CATEGORIAS</span>
-                </button>
-              </MenuHandler>
-              <MenuList className="w-64 p-0 rounded-theme overflow-hidden max-h-[70vh] divide-y bg-opacity-80 bg-white backdrop-blur-sm">
-                <MenuItem className="text-zinc-900 gap-3 flex items-center rounded-none hover:bg-blue-200">
-                  <Avatar
-                    src="https://storetng.vteximg.com.br/arquivos/ids/412221-690-690/BNMKCW33_950_1-CAMISETA-BASICA-GOLA-LARGA.jpg?v=637703412713570000"
-                    size="sm"
-                  />
-                  <span className={defaultFont.className}>Camisetas</span>
-                </MenuItem>
-                <MenuItem className="text-zinc-900 gap-3 flex items-center rounded-none">
-                  <Avatar
-                    src="https://storetng.vteximg.com.br/arquivos/ids/412221-690-690/BNMKCW33_950_1-CAMISETA-BASICA-GOLA-LARGA.jpg?v=637703412713570000"
-                    size="sm"
-                  />
-                  <span className={defaultFont.className}>Shorts</span>
-                </MenuItem>
-              </MenuList>
-            </Menu>
-
-            <div className="items-center gap-10 hidden lg:flex">
-              <Link
-                href={"/"}
-                className="flex items-center font-semibold gap-2 text-white hover:text-zinc-200 transition-colors active:text-white"
-              >
-                <Home className="w-3.5 h-3.5" />
-                Início
-              </Link>
-              <button className="flex items-center font-semibold gap-2 text-white hover:text-zinc-200 transition-colors active:text-white">
-                <ShoppingCart className="w-3.5 h-3.5" />
-                Compre por
-              </button>
-              <button className="flex items-center font-semibold gap-2 text-white hover:text-zinc-200 transition-colors active:text-white">
-                <Info className="w-3.5 h-3.5" />
-                Sobre Nós
-              </button>
-              <button className="flex items-center font-semibold gap-2 text-white hover:text-zinc-200 transition-colors active:text-white">
-                <Phone className="w-3.5 h-3.5" />
-                Contato
-              </button>
-            </div>
-
-            <button
-              className="w-10 h-10 flex justify-center items-center rounded-theme text-white lg:hidden"
-              onClick={() => setDrawer(true)}
-            >
-              <Bars className="w-8 h-8" />
-            </button>
-          </div>
+        <div className="h-48 bg-gradient-to-r from-blue-500 to-green-500 p-3 flex justify-center items-center text-center text-3xl text-white font-bold">
+          {title}
         </div>
       </header>
 

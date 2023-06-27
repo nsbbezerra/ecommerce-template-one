@@ -22,12 +22,12 @@ export default function Button({
   return (
     <CustomButton
       {...rest}
-      className="flex items-center gap-2 justify-center"
+      className={`${rest.className} flex items-center gap-2 justify-center`}
       disabled={rest.disabled || loading}
       style={{ boxShadow: "none" }}
     >
       {loading ? (
-        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+        <Loader2 className="w-3.5 h-3.5 animate-spin shrink-0" />
       ) : (
         icon && icon
       )}

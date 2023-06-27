@@ -10,6 +10,7 @@ import * as Select from "./Select";
 import * as Accordion from "./Accordion";
 import * as List from "./List";
 import Chip from "./Chip";
+import OtherHeader from "./OtherHeader";
 
 export {
   Button,
@@ -24,4 +25,5 @@ export {
   Accordion,
   List,
   Chip,
+  OtherHeader,
 };

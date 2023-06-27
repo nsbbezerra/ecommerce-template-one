@@ -76,14 +76,16 @@ export default function IndexHeader() {
 
         <div className="h-28 px-5 w-full flex items-center">
           <div className="container max-w-6xl mx-auto grid grid-cols-2 lg:grid-cols-[260px_1fr_260px]">
-            <div className="relative w-52">
-              <Image
-                src={"logo.svg"}
-                alt={`${appConfigs.companyName} logo`}
-                width={512}
-                height={139}
-              />
-            </div>
+            <Link href={"/"}>
+              <div className="relative w-52">
+                <Image
+                  src={"logo.svg"}
+                  alt={`${appConfigs.companyName} logo`}
+                  width={512}
+                  height={139}
+                />
+              </div>
+            </Link>
             <div className="hidden w-full lg:flex items-center">
               <div className="relative w-full flex items-center">
                 <input
@@ -92,6 +94,7 @@ export default function IndexHeader() {
                 />
                 <Search className="absolute right-4 text-blue-500" />
               </div>
+              L
             </div>
             <div className="w-full flex items-center justify-end gap-2">
               <button className="w-11 h-11 flex items-center justify-center hover:text-blue-500 transition-colors">
@@ -220,14 +223,16 @@ export default function IndexHeader() {
       >
         <div className="container max-w-6xl mx-auto h-full flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="relative w-36 sm:w-40 sm:mr-16">
-              <Image
-                src={"logo.svg"}
-                alt={`${appConfigs.companyName} logo`}
-                width={512}
-                height={139}
-              />
-            </div>
+            <Link href={"/"}>
+              <div className="relative w-36 sm:w-40 sm:mr-16">
+                <Image
+                  src={"logo.svg"}
+                  alt={`${appConfigs.companyName} logo`}
+                  width={512}
+                  height={139}
+                />
+              </div>
+            </Link>
             <div className="hidden lg:flex items-center gap-5">
               <Link
                 href={"/"}
@@ -248,6 +253,7 @@ export default function IndexHeader() {
                 <Phone className="w-3.5 h-3.5" />
                 Contato
               </button>
+              L
             </div>
           </div>
 

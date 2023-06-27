@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Button from "../Button";
 import { ShoppingCart } from "lucide-react";
+import Link from "next/link";
 
 export default function PageProductsGrid() {
   return (
@@ -25,12 +26,14 @@ export default function PageProductsGrid() {
           </span>
 
           <span>R$ 190,00</span>
-          <Button
-            fullWidth={true}
-            icon={<ShoppingCart className="w-3.5 h-3.5 flex-shrink-0" />}
-          >
-            Comprar
-          </Button>
+          <Link href={"/produto"}>
+            <Button
+              fullWidth={true}
+              icon={<ShoppingCart className="w-3.5 h-3.5 flex-shrink-0" />}
+            >
+              Comprar
+            </Button>
+          </Link>
         </div>
       </div>
       <div className="rounded-theme overflow-hidden bg-white shadow-md w-full h-fit">
@@ -53,12 +56,14 @@ export default function PageProductsGrid() {
           </span>
 
           <span>R$ 190,00</span>
-          <Button
-            fullWidth={true}
-            icon={<ShoppingCart className="w-3.5 h-3.5 flex-shrink-0" />}
-          >
-            Comprar
-          </Button>
+          <Link href={"/produto"}>
+            <Button
+              fullWidth={true}
+              icon={<ShoppingCart className="w-3.5 h-3.5 flex-shrink-0" />}
+            >
+              Comprar
+            </Button>
+          </Link>
         </div>
       </div>
       <div className="rounded-theme overflow-hidden bg-white shadow-md w-full h-fit">
@@ -81,12 +86,14 @@ export default function PageProductsGrid() {
           </span>
 
           <span>R$ 190,00</span>
-          <Button
-            fullWidth={true}
-            icon={<ShoppingCart className="w-3.5 h-3.5 flex-shrink-0" />}
-          >
-            Comprar
-          </Button>
+          <Link href={"/produto"}>
+            <Button
+              fullWidth={true}
+              icon={<ShoppingCart className="w-3.5 h-3.5 flex-shrink-0" />}
+            >
+              Comprar
+            </Button>
+          </Link>
         </div>
       </div>
       <div className="rounded-theme overflow-hidden bg-white shadow-md w-full h-fit">
@@ -109,12 +116,14 @@ export default function PageProductsGrid() {
           </span>
 
           <span>R$ 190,00</span>
-          <Button
-            fullWidth={true}
-            icon={<ShoppingCart className="w-3.5 h-3.5 flex-shrink-0" />}
-          >
-            Comprar
-          </Button>
+          <Link href={"/produto"}>
+            <Button
+              fullWidth={true}
+              icon={<ShoppingCart className="w-3.5 h-3.5 flex-shrink-0" />}
+            >
+              Comprar
+            </Button>
+          </Link>
         </div>
       </div>
     </div>
